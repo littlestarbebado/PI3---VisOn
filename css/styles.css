@@ -1,0 +1,47 @@
+/* Configurações Gerais */
+:root {
+    --navy: #0b1120;
+    --white: #ffffff;
+    --grey-text: #64748b;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; text-align: center; }
+
+/* HERO */
+.hero { background-color: var(--navy); color: var(--white); padding: 100px 0; }
+.hero-logo { height: 80px; margin-bottom: 30px; }
+.hero h1 { font-size: 42px; margin-bottom: 20px; font-weight: 700; }
+.hero p { font-size: 18px; opacity: 0.8; max-width: 600px; margin: 0 auto 40px; }
+
+.hero-btns { display: flex; justify-content: center; gap: 15px; }
+.btn-white { background: white; color: var(--navy); padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: 600; }
+.btn-outline { border: 1px solid white; color: white; padding: 12px 30px; border-radius: 50px; text-decoration: none; }
+
+/* STATS */
+.stats { padding: 60px 0; background: white; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 20px; }
+.blue { background: #e0f2fe; color: #0ea5e9; }
+.light-blue { background: #ecfeff; color: #06b6d4; }
+.purple { background: #f5f3ff; color: #8b5cf6; }
+.pink { background: #fdf2f8; color: #ec4899; }
+
+/* SERVIÇOS */
+.services-preview { padding: 80px 0; background: #fcfcfc; }
+.services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin: 40px 0; }
+.service-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: left; transition: 0.3s; border: 1px solid #f1f5f9; }
+.service-card:hover { transform: translateY(-10px); }
+.service-card i { font-size: 30px; color: #0ea5e9; margin-bottom: 20px; display: block; }
+.btn-dark-pill { background: var(--navy); color: white; padding: 12px 40px; border-radius: 50px; text-decoration: none; display: inline-block; }
+
+/* CTA BANNER (O formato de pílula da imagem) */
+.cta-banner-section { padding-bottom: 80px; }
+.cta-pill-banner { 
+    background-color: var(--navy); 
+    color: white; 
+    padding: 60px 40px; 
+    border-radius: 100px; /* Cria o efeito arredondado gigante da imagem */
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.btn-white-pill { background: white; color: var(--navy); padding: 15px 40px; border-radius: 50px; text-decoration: none; display: inline-block; margin-top: 25px; font-weight: 600; }
