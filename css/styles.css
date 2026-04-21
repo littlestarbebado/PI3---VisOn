@@ -1,47 +1,176 @@
-/* Configurações Gerais */
+/* =====================
+   BASE
+===================== */
+
 :root {
     --navy: #0b1120;
     --white: #ffffff;
     --grey-text: #64748b;
 }
 
-.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; text-align: center; }
+/* NÃO mexer no .container do Bootstrap */
 
-/* HERO */
-.hero { background-color: var(--navy); color: var(--white); padding: 100px 0; }
-.hero-logo { height: 80px; margin-bottom: 30px; }
-.hero h1 { font-size: 42px; margin-bottom: 20px; font-weight: 700; }
-.hero p { font-size: 18px; opacity: 0.8; max-width: 600px; margin: 0 auto 40px; }
+/* =====================
+   HERO
+===================== */
 
-.hero-btns { display: flex; justify-content: center; gap: 15px; }
-.btn-white { background: white; color: var(--navy); padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: 600; }
-.btn-outline { border: 1px solid white; color: white; padding: 12px 30px; border-radius: 50px; text-decoration: none; }
+.hero {
+    background-color: var(--navy);
+    color: var(--white);
+    padding: 120px 0;
+}
 
-/* STATS */
-.stats { padding: 60px 0; background: white; }
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-.stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 20px; }
+.hero-logo {
+    height: 80px;
+    margin-bottom: 25px;
+}
+
+.hero h1 {
+    font-size: 44px;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.hero p {
+    font-size: 18px;
+    opacity: 0.8;
+    max-width: 600px;
+    margin: 0 auto 35px;
+}
+
+.hero-btns {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* BOTÕES */
+
+.btn-white {
+    background: white;
+    color: var(--navy);
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: 0.25s;
+}
+
+.btn-white:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255,255,255,0.2);
+}
+
+.btn-outline {
+    border: 1px solid rgba(255,255,255,0.5);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 50px;
+    transition: 0.25s;
+}
+
+.btn-outline:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+/* =====================
+   STATS
+===================== */
+
+.stats {
+    background: white;
+}
+
+.stat-item {
+    padding: 20px;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 20px;
+}
+
+/* CORES */
+
 .blue { background: #e0f2fe; color: #0ea5e9; }
 .light-blue { background: #ecfeff; color: #06b6d4; }
 .purple { background: #f5f3ff; color: #8b5cf6; }
 .pink { background: #fdf2f8; color: #ec4899; }
 
-/* SERVIÇOS */
-.services-preview { padding: 80px 0; background: #fcfcfc; }
-.services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin: 40px 0; }
-.service-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: left; transition: 0.3s; border: 1px solid #f1f5f9; }
-.service-card:hover { transform: translateY(-10px); }
-.service-card i { font-size: 30px; color: #0ea5e9; margin-bottom: 20px; display: block; }
-.btn-dark-pill { background: var(--navy); color: white; padding: 12px 40px; border-radius: 50px; text-decoration: none; display: inline-block; }
+/* =====================
+   SERVICES
+===================== */
 
-/* CTA BANNER (O formato de pílula da imagem) */
-.cta-banner-section { padding-bottom: 80px; }
-.cta-pill-banner { 
-    background-color: var(--navy); 
-    color: white; 
-    padding: 60px 40px; 
-    border-radius: 100px; /* Cria o efeito arredondado gigante da imagem */
+.services-preview {
+    background: #fcfcfc;
+}
+
+.service-card {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    text-align: left;
+    transition: 0.3s;
+    border: 1px solid #f1f5f9;
+    height: 100%;
+}
+
+.service-card:hover {
+    transform: translateY(-8px);
+}
+
+.service-card i {
+    font-size: 30px;
+    color: #0ea5e9;
+    margin-bottom: 20px;
+}
+
+/* BOTÃO */
+
+.btn-dark-pill {
+    background: var(--navy);
+    color: white;
+    padding: 12px 35px;
+    border-radius: 50px;
+    display: inline-block;
+    transition: 0.25s;
+}
+
+.btn-dark-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+/* =====================
+   CTA
+===================== */
+
+.cta-pill-banner {
+    background-color: var(--navy);
+    color: white;
+    padding: 60px 40px;
+    border-radius: 80px;
     max-width: 1000px;
     margin: 0 auto;
 }
-.btn-white-pill { background: white; color: var(--navy); padding: 15px 40px; border-radius: 50px; text-decoration: none; display: inline-block; margin-top: 25px; font-weight: 600; }
+
+.btn-white-pill {
+    background: white;
+    color: var(--navy);
+    padding: 14px 35px;
+    border-radius: 50px;
+    display: inline-block;
+    margin-top: 25px;
+    font-weight: 600;
+    transition: 0.25s;
+}
+
+.btn-white-pill:hover {
+    transform: translateY(-2px);
+}
