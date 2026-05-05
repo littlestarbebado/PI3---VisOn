@@ -1,24 +1,23 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Importa o componente que desenhámos
+import GestaoConteudo from './pages/GestaoConteudo'; 
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        {/* Se depois criares uma Sidebar global, ela pode ficar aqui em cima do Routes */}
+        <Routes>
+          {/* Por agora, definimos a Gestão de Conteúdos como a página inicial "/" */}
+          <Route path="/" element={<GestaoConteudo />} />
+          
+          {/* Se quiseres que fique no caminho /gestao, usa este debaixo (descomentado) */}
+          {/* <Route path="/gestao" element={<GestaoConteudo />} /> */}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
