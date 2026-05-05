@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VIS ON – Dashboard Administrador</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+ 
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-box">
+        VIS
+        <span class="toggle-pill">ON &nbsp;&nbsp;&nbsp;</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" href="#">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="#">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path d="M9 12h6m-6 4h6M7 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1M9 4a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Conteúdos
+      </a>
+      <a class="nav-item" href="#">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/>
+          <path d="M19 8v6m3-3h-6"/>
+        </svg>
+        Utilizadores
+      </a>
+      <a class="nav-item" href="#">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
+          <path d="M16 3v4M8 3v4"/>
+        </svg>
+        Documentos
+      </a>
+      <a class="nav-item" href="#">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        Atividade
+      </a>
+    </nav>
+  </aside>
+ 
+  <!-- MAIN CONTENT -->
+  <main class="main">
+ 
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>Dashboard Administrador</h1>
+      <p>Visão geral do sistema e gestão</p>
+    </div>
+ 
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Clientes<br>Ativos</div>
+          <div class="stat-value">2</div>
+        </div>
+        <div class="stat-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M9 12h6m-6 4h6M7 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1M9 4a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+      </div>
+ 
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Utilizadores</div>
+          <div class="stat-value">8</div>
+        </div>
+        <div class="stat-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/>
+            <path d="M19 8v6m3-3h-6"/>
+          </svg>
+        </div>
+      </div>
+ 
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Documentos</div>
+          <div class="stat-value">3</div>
+        </div>
+        <div class="stat-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+      </div>
+ 
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Atividade<br>(Hoje)</div>
+          <div class="stat-value">12</div>
+        </div>
+        <div class="stat-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Mid Section -->
+    <div class="mid-section">
+ 
+      <!-- Ações Rápidas -->
+      <div class="card">
+        <div class="card-title">Ações Rápidas</div>
+        <div class="action-list">
+          <div class="action-item">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M9 12h6m-6 4h6M7 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1M9 4a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            Gerir Conteúdos do Site
+          </div>
+          <div class="action-item">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/>
+              <path d="M19 8v6m3-3h-6"/>
+            </svg>
+            Criar Novo Utilizador
+          </div>
+          <div class="action-item">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Gerir Documentos
+          </div>
+          <div class="action-item">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            Ver Logs de Atividade
+          </div>
+        </div>
+      </div>
+ 
+      <!-- Clientes Recentes -->
+      <div class="card">
+        <div class="card-title">Clientes Recentes</div>
+        <div class="client-list">
+          <div class="client-item">
+            <div>
+              <div class="client-name">TechCorp Solutions</div>
+              <div class="client-email">contato@techcorp.pt</div>
+            </div>
+            <div class="client-score">
+              <div class="score-value">Score: 75</div>
+              <div class="score-date">2024-01-15</div>
+            </div>
+          </div>
+          <div class="client-item">
+            <div>
+              <div class="client-name">Digital Innovations Lda</div>
+              <div class="client-email">info@digitalinnovations.pt</div>
+            </div>
+            <div class="client-score">
+              <div class="score-value">Score: 62</div>
+              <div class="score-date">2024-02-20</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Atividade Recente -->
+    <div class="activity-card">
+      <div class="card-title">Atividade Recente</div>
+      <div class="activity-list">
+ 
+        <div class="activity-item">
+          <div class="dot"></div>
+          <div class="activity-body">
+            <div class="activity-user">Gestor Silva</div>
+            <div class="activity-type">Upload de Documento</div>
+            <div class="activity-desc">Carregou "Relatório de Avaliação de Risco - Q1 2024" para TechCorp Solutions</div>
+          </div>
+          <div class="activity-time">2024-03-20 14:30:00</div>
+        </div>
+ 
+        <div class="activity-item">
+          <div class="dot"></div>
+          <div class="activity-body">
+            <div class="activity-user">João Cliente</div>
+            <div class="activity-type">Criação de Pedido</div>
+            <div class="activity-desc">Criou novo pedido: "Dúvidas sobre relatório de risco"</div>
+          </div>
+          <div class="activity-time">2024-03-19 10:15:00</div>
+        </div>
+ 
+        <div class="activity-item">
+          <div class="dot"></div>
+          <div class="activity-body">
+            <div class="activity-user">Administrador</div>
+            <div class="activity-type">Criação de Utilizador</div>
+            <div class="activity-desc">Criou novo gestor: gestor2@cybersec.com</div>
+          </div>
+          <div class="activity-time">2024-03-18 09:00:00</div>
+        </div>
+ 
+        <div class="activity-item">
+          <div class="dot"></div>
+          <div class="activity-body">
+            <div class="activity-user">João Cliente</div>
+            <div class="activity-type">Report de Incidente</div>
+            <div class="activity-desc">Reportou incidente: "Email de Phishing Reportado"</div>
+          </div>
+          <div class="activity-time">2024-03-20 11:45:00</div>
+        </div>
+ 
+      </div>
+    </div>
+ 
+  </main>
+ 
+  <script src="script.js"></script>
+</body>
+</html>
