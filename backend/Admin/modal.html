@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VIS ON – Criar Novo Gestor</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="modal.css"/>
+</head>
+<body>
+
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay">
+
+    <!-- MODAL -->
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h2 id="modal-title">Criar Novo Gestor</h2>
+        <button class="close-btn" id="closeBtn" title="Fechar">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <div class="modal-body">
+
+        <div class="field">
+          <label for="nome">Nome <span class="required">*</span></label>
+          <input type="text" id="nome" placeholder=""/>
+        </div>
+
+        <div class="field">
+          <label for="email">Email <span class="required">*</span></label>
+          <input type="email" id="email" placeholder=""/>
+        </div>
+
+        <div class="field">
+          <label for="telefone">Telefone</label>
+          <input type="tel" id="telefone" placeholder=""/>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn-submit" id="submitBtn">Criar Gestor</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="modal.js"></script>
+</body>
+</html>
