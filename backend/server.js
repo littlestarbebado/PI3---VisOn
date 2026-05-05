@@ -1,38 +1,23 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const { sequelize } = require('./models');
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static('uploads'));
 
-app.get('/', (req, res) => {
-  res.send('API VIS ON a funcionar');
-});
+// Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/conteudos', require('./routes/conteudos'));
+app.use('/api/artigos', require('./routes/artigos'));
+app.use('/api/contacto', require('./routes/contacto'));
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor a correr em http://localhost:${PORT}`);
-});
-
-const sequelize = require('./src/config/database');
-const AtivoTecnologico = require('./src/models/AtivoTecnologico');
-const Documento = require('./src/models/Documento');
-
-// Sincronizar com a Base de Dados
-sequelize.sync({ alter: true }) // O 'alter: true' atualiza as tabelas se fizeres mudanças nos models
-  .then(() => console.log('Tabelas do Gestor sincronizadas com o PostgreSQL!'))
-  .catch(err => console.error('Erro a sincronizar com a BD:', err));
-
-// Importar as rotas do Daniel
-const ativoRoutes = require('./src/routes/ativoRoutes');
-
-// Ativar as rotas com o prefixo /api/ativos
-app.use('/api/ativos', ativoRoutes);
-
-// Importar as rotas de Documentos do Daniel
-const documentoRoutes = require('./src/routes/documentoRoutes');
-
-// Ativar as rotas com o prefixo /api/documentos
-app.use('/api/documentos', documentoRoutes);  
+sequelize.sync({ alter: true }).then(() => {
+  console.log('✅ Base de dados sincronizada');
+  app.listen(PORT, () => console.log(`🚀 Servidor a correr na porta ${PORT}`));
+}).catch(err => console.error('❌ Erro na BD:', err));
