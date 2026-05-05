@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIS ON - Cibersegurança</title>
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap (grid only) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- CSS -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- CSS custom -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/footer.css">
@@ -19,6 +22,7 @@
 
 <body>
 
+<!-- HEADER -->
 <header class="main-header">
     <div class="container header-content">
         <div class="logo">
@@ -43,57 +47,82 @@
 
 <!-- HERO -->
 <section class="hero" id="inicio">
-    <div class="container text-center">
+    <div class="hero__bg-grid"></div>
+    <div class="container hero__content text-center">
+
+        <div class="hero__badge">
+            <span class="hero__badge-dot"></span>
+            Cibersegurança de nova geração
+        </div>
+
         <img src="assets/images/Asset 2.png" alt="VIS ON Logo" class="hero-logo">
 
-        <h1>Proteja o Futuro Digital da sua Organização</h1>
+        <h1 class="hero__title">
+            Proteja o Futuro Digital<br>
+            <span class="hero__title--accent">da sua Organização</span>
+        </h1>
 
-        <p>
-            Soluções avançadas de cibersegurança para empresas que valorizam a proteção
-            dos seus dados e sistemas.
+        <p class="hero__description">
+            Soluções avançadas de cibersegurança para empresas que não podem
+            dar-se ao luxo de falhar. Pentests, auditorias e monitorização contínua.
         </p>
 
-        <div class="hero-btns">
-            <a href="#" class="btn-white">Fale Connosco</a>
-            <a href="#" class="btn-outline">Conheça os Serviços</a>
+        <div class="hero__actions">
+            <a href="#contactos" class="btn btn--primary">
+                <i class="fa-solid fa-shield-halved"></i>
+                Fale Connosco
+            </a>
+            <a href="#servicos" class="btn btn--secondary">
+                Conheça os Serviços
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
         </div>
+
     </div>
 </section>
 
 <!-- STATS -->
-<section class="stats py-5">
+<section class="stats" id="stats">
     <div class="container">
         <div class="row text-center g-4">
 
             <div class="col-6 col-md-3">
                 <div class="stat-item">
-                    <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
-                    <h2>150+</h2>
-                    <p>Clientes Ativos</p>
+                    <div class="stat-icon stat-icon--blue">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h2 class="stat-value">150+</h2>
+                    <p class="stat-label">Clientes Ativos</p>
                 </div>
             </div>
 
             <div class="col-6 col-md-3">
                 <div class="stat-item">
-                    <div class="stat-icon light-blue"><i class="fa-solid fa-shield-halved"></i></div>
-                    <h2>500+</h2>
-                    <p>PenTests Realizados</p>
+                    <div class="stat-icon stat-icon--blue">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h2 class="stat-value">500+</h2>
+                    <p class="stat-label">PenTests Realizados</p>
                 </div>
             </div>
 
             <div class="col-6 col-md-3">
                 <div class="stat-item">
-                    <div class="stat-icon purple"><i class="fa-solid fa-chart-line"></i></div>
-                    <h2>98%</h2>
-                    <p>Taxa de Satisfação</p>
+                    <div class="stat-icon stat-icon--blue">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h2 class="stat-value">98%</h2>
+                    <p class="stat-label">Taxa de Satisfação</p>
                 </div>
             </div>
 
             <div class="col-6 col-md-3">
                 <div class="stat-item">
-                    <div class="stat-icon pink"><i class="fa-solid fa-award"></i></div>
-                    <h2>15+</h2>
-                    <p>Anos de Experiência</p>
+                    <div class="stat-icon stat-icon--blue">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h2 class="stat-value">15+</h2>
+                    <p class="stat-label">Anos de Experiência</p>
                 </div>
             </div>
 
@@ -102,10 +131,11 @@
 </section>
 
 <!-- SERVICES -->
-<section class="services-preview py-5" id="servicos">
-    <div class="container text-center">
+<section class="services" id="servicos">
+    <div class="container">
 
-        <div class="section-header mb-4">
+        <div class="section-header text-center">
+            <span class="section-tag">O que fazemos</span>
             <h2>Os Nossos Serviços</h2>
             <p>Oferecemos soluções completas de cibersegurança adaptadas às necessidades da sua organização</p>
         </div>
@@ -114,56 +144,95 @@
 
             <div class="col-md-4">
                 <div class="service-card">
-                    <i class="fa-solid fa-shield-virus"></i>
-                    <h3>Avaliação de Maturidade IT</h3>
-                    <p>Análise completa do nível de maturidade da sua infraestrutura tecnológica.</p>
+                    <div class="service-card__icon">
+                        <i class="fa-solid fa-shield-virus"></i>
+                    </div>
+                    <h3 class="service-card__title">Avaliação de Maturidade IT</h3>
+                    <p class="service-card__text">Análise completa do nível de maturidade da sua infraestrutura tecnológica e práticas de segurança.</p>
+                    <a href="#" class="service-card__link">
+                        Saber mais <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="service-card">
-                    <i class="fa-solid fa-user-secret"></i>
-                    <h3>Testes de Penetração</h3>
-                    <p>Simulação de ataques reais para identificar vulnerabilidades.</p>
+                    <div class="service-card__icon">
+                        <i class="fa-solid fa-user-secret"></i>
+                    </div>
+                    <h3 class="service-card__title">Testes de Penetração</h3>
+                    <p class="service-card__text">Simulação de ataques reais para identificar vulnerabilidades antes dos atacantes.</p>
+                    <a href="#" class="service-card__link">
+                        Saber mais <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="service-card">
-                    <i class="fa-solid fa-file-shield"></i>
-                    <h3>Conformidade NIS I/II</h3>
-                    <p>Apoio à implementação das diretivas europeias.</p>
+                    <div class="service-card__icon">
+                        <i class="fa-solid fa-file-shield"></i>
+                    </div>
+                    <h3 class="service-card__title">Conformidade NIS I/II</h3>
+                    <p class="service-card__text">Apoio à implementação e manutenção da conformidade com as diretivas europeias.</p>
+                    <a href="#" class="service-card__link">
+                        Saber mais <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
 
         </div>
 
-        <div class="mt-4">
-            <a href="#" class="btn-dark-pill">Ver Todos os Serviços</a>
+        <div class="text-center mt-5">
+            <a href="#" class="btn btn--outline-dark">Ver Todos os Serviços</a>
         </div>
 
     </div>
 </section>
 
 <!-- CTA -->
-<section class="cta-banner-section py-5">
+<section class="cta-section" id="contactos">
     <div class="container">
-        <div class="cta-pill-banner text-center">
-            <h2>Pronto para Proteger a sua Organização?</h2>
-            <p>Entre em contacto connosco e descubra como podemos ajudar.</p>
-            <a href="#" class="btn-white-pill">Solicitar Consultoria Gratuita</a>
+        <div class="cta-banner text-center">
+            <span class="cta-banner__tag">Consultoria gratuita</span>
+            <h2 class="cta-banner__title">Pronto para Proteger<br>a sua Organização?</h2>
+            <p class="cta-banner__text">Entre em contacto connosco e descubra como podemos ajudar a fortalecer a sua postura de cibersegurança.</p>
+            <a href="#" class="btn btn--primary">
+                <i class="fa-solid fa-paper-plane"></i>
+                Solicitar Consultoria Gratuita
+            </a>
         </div>
     </div>
 </section>
 
 </main>
 
-<footer class="main-footer">
+<!-- FOOTER -->
+<footer class="main-footer" id="contactos-footer">
     <div class="container footer-grid">
 
-        <div class="footer-column brand">
-            <img src="assets/images/Asset 2.png" alt="VIS ON Logo" style="height: 40px;">
-            <p>Protegendo o futuro digital das organizações portuguesas.</p>
+        <div class="footer-column footer-column--brand">
+            <img src="assets/images/Asset 2.png" alt="VIS ON Logo" class="footer-logo">
+            <p class="footer-description">Protegendo o futuro digital das organizações portuguesas.</p>
+        </div>
+
+        <div class="footer-column">
+            <h3>Links Rápidos</h3>
+            <ul>
+                <li><a href="#inicio">Início</a></li>
+                <li><a href="#servicos">Serviços</a></li>
+                <li><a href="#contactos">Contactos</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h3>Serviços</h3>
+            <ul>
+                <li><a href="#">Avaliação de Maturidade IT</a></li>
+                <li><a href="#">Testes de Penetração</a></li>
+                <li><a href="#">Conformidade NIS I/II</a></li>
+                <li><a href="#">Formação</a></li>
+            </ul>
         </div>
 
         <div class="footer-column">
@@ -171,6 +240,7 @@
             <ul class="contact-list">
                 <li><i class="fa-regular fa-envelope"></i> info@vis-on.pt</li>
                 <li><i class="fa-solid fa-phone"></i> +351 210 123 456</li>
+                <li><i class="fa-solid fa-location-dot"></i> Lisboa, Portugal</li>
             </ul>
         </div>
 
@@ -180,6 +250,11 @@
         <p>&copy; 2026 VIS ON. Todos os direitos reservados.</p>
     </div>
 </footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Scroll animations -->
+<script src="js/main.js"></script>
 
 </body>
 </html>
