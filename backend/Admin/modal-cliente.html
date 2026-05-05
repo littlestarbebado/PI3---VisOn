@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VIS ON – Criar Novo Cliente</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="modal-cliente.css"/>
+</head>
+<body>
+
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay">
+
+    <!-- MODAL -->
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+      <!-- Título + fechar -->
+      <div class="modal-header">
+        <h2 id="modal-title">Criar Novo Cliente</h2>
+        <button class="close-btn" id="closeBtn" title="Fechar">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6"  x2="6"  y2="18"/>
+            <line x1="6"  y1="6"  x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Corpo com scroll -->
+      <div class="modal-body">
+
+        <!-- SECÇÃO 1: Informações da Empresa -->
+        <div class="section-title">Informações da Empresa</div>
+
+        <div class="field full">
+          <label>Nome da Empresa <span class="req">*</span></label>
+          <input type="text" id="empresaNome"/>
+        </div>
+
+        <!-- SECÇÃO 2: Cliente (Acesso ao Portal) -->
+        <div class="section-title">Cliente (Acesso ao Portal)</div>
+
+        <div class="row-2">
+          <div class="field">
+            <label>Nome <span class="req">*</span></label>
+            <input type="text" id="clienteNome"/>
+          </div>
+          <div class="field">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="clienteEmail"/>
+          </div>
+        </div>
+
+        <div class="field half">
+          <label>Telefone <span class="req">*</span></label>
+          <input type="tel" id="clienteTelefone"/>
+        </div>
+
+        <!-- SECÇÃO 3: Responsável de Segurança -->
+        <div class="section-title">Responsável de Segurança</div>
+
+        <div class="row-2">
+          <div class="field">
+            <label>Nome</label>
+            <input type="text" id="segNome"/>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="segEmail"/>
+          </div>
+        </div>
+
+        <div class="field half">
+          <label>Telefone</label>
+          <input type="tel" id="segTelefone"/>
+        </div>
+
+        <!-- SECÇÃO 4: Contacto Permanente -->
+        <div class="section-title">Contacto Permanente</div>
+
+        <div class="row-2">
+          <div class="field">
+            <label>Nome</label>
+            <input type="text" id="contNome"/>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="contEmail"/>
+          </div>
+        </div>
+
+        <div class="field half">
+          <label>Telefone</label>
+          <input type="tel" id="contTelefone"/>
+        </div>
+
+      </div><!-- /modal-body -->
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn-submit" id="submitBtn">Criar Cliente</button>
+      </div>
+
+    </div><!-- /modal -->
+  </div><!-- /overlay -->
+
+  <script src="modal-cliente.js"></script>
+</body>
+</html>
