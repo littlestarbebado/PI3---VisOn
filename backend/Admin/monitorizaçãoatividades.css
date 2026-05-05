@@ -1,0 +1,125 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  display: flex;
+  background: #f5f6fa;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 230px;
+  height: 100vh;
+  background: #0f172a;
+  color: white;
+  padding: 20px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 40px;
+}
+
+.menu {
+  list-style: none;
+}
+
+.menu li {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.menu li:hover,
+.menu .active {
+  background: #1e293b;
+}
+
+/* Main */
+.main {
+  flex: 1;
+  padding: 30px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actions button {
+  padding: 10px 15px;
+  margin-left: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #0f172a;
+  color: white;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+}
+
+/* Card */
+.card {
+  margin-top: 30px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.user {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  background: #dbeafe;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.user-text span {
+  display: block;
+  font-size: 14px;
+  color: gray;
+}
+
+.badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.admin { background: red; color: white; }
+.gestor { background: black; color: white; }
+.cliente { background: #ddd; }
+
+.icons span {
+  margin-left: 10px;
+  cursor: pointer;
+  color: red;
+}
