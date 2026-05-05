@@ -1,3 +1,5 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 async function loadComponent(id, file) {
     const response = await fetch(file);
     const html = await response.text();
