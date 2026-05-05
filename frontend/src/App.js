@@ -1,24 +1,36 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import './App.css';
 
-// Importa o componente que desenhámos
-import GestaoConteudo from './pages/GestaoConteudo'; 
+import Home from './pages/public/Home';
+import Sobre from './pages/public/Sobre';
+import Servicos from './pages/public/Servicos';
+import Artigos from './pages/public/Artigos';
+import Contactos from './pages/public/Contactos';
+import Login from './pages/public/Login';
+import AdminLayout from './pages/adm/AdminLayout';
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <div className="App">
-        {/* Se depois criares uma Sidebar global, ela pode ficar aqui em cima do Routes */}
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
-          {/* Por agora, definimos a Gestão de Conteúdos como a página inicial "/" */}
-          <Route path="/" element={<GestaoConteudo />} />
-          
-          {/* Se quiseres que fique no caminho /gestao, usa este debaixo (descomentado) */}
-          {/* <Route path="/gestao" element={<GestaoConteudo />} /> */}
+          {/* Público */}
+          <Route path="/" element={<Home />} />
+          <Route path="/sobre" element={<Sobre />} />
+          <Route path="/servicos" element={<Servicos />} />
+          <Route path="/artigos" element={<Artigos />} />
+          <Route path="/contactos" element={<Contactos />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* Admin */}
+          <Route path="/admin" element={<AdminLayout />} />
+          <Route path="/admin/artigos" element={<AdminLayout />} />
+          <Route path="/admin/conteudos" element={<AdminLayout />} />
+          <Route path="/admin/mensagens" element={<AdminLayout />} />
         </Routes>
-      </div>
-    </Router>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-
-export default App;
