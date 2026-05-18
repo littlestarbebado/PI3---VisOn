@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Utilizadores</title>
+
+  <link rel="stylesheet" href="monitorizaçãoatividades.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="logo">VIS ON</div>
+  <ul class="menu">
+    <li>Dashboard</li>
+    <li>Conteúdos</li>
+    <li class="active">Utilizadores</li>
+    <li>Documentos</li>
+    <li>Atividade</li>
+  </ul>
+</div>
+
+<div class="main">
+  <div class="header">
+    <div>
+      <h1>Gestão de Utilizadores</h1>
+      <p>Criar e gerir utilizadores do sistema</p>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="addUser('Gestor')">Criar Gestor</button>
+      <button class="btn-secondary" onclick="addUser('Cliente')">Criar Cliente</button>
+    </div>
+  </div>
+
+  <div class="card" id="userList">
+    <h3>Utilizadores Registados</h3>
+
+    <div class="user">
+      <div class="user-info">
+        <div class="avatar"></div>
+        <div class="user-text">
+          Administrador <span>admin@cybersec.com</span>
+        </div>
+        <span class="badge admin">Admin</span>
+      </div>
+    </div>
+
+    <div class="user">
+      <div class="user-info">
+        <div class="avatar"></div>
+        <div class="user-text">
+          Gestor Silva <span>gestor@cybersec.com</span>
+        </div>
+        <span class="badge gestor">Gestor</span>
+      </div>
+      <div class="icons">
+        🔒 <span onclick="removeUser(this)">🗑</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
