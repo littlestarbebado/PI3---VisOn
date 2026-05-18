@@ -1,22 +1,39 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+
 import './App.css';
 
+/* PÚBLICO */
 import Home from './pages/public/Home';
 import Sobre from './pages/public/Sobre';
 import Servicos from './pages/public/Servicos';
 import Artigos from './pages/public/Artigos';
 import Contactos from './pages/public/Contactos';
 import Login from './pages/public/Login';
-import AdminLayout from './pages/adm/AdminLayout';
+
+/* LAYOUT ADMIN */
+import AdminLayout from './layouts/AdminLayout';
+
+/* PÁGINAS ADMIN */
+import Dashboard from './pages/adm/Dashboard';
+import Empresa from './pages/adm/Empresa';
+import ServicosAdmin from './pages/adm/ServicosAdmin';
+import ArtigosAdmin from './pages/adm/ArtigosAdmin';
+import Utilizadores from './pages/adm/Utilizadores';
+import Documentos from './pages/adm/Documentos';
+import Atividade from './pages/adm/Atividade';
 
 export default function App() {
+
   return (
     <AuthProvider>
+
       <BrowserRouter>
+
         <Routes>
-          {/* Público */}
+
+          {/* PÚBLICO */}
           <Route path="/" element={<Home />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/servicos" element={<Servicos />} />
@@ -24,13 +41,50 @@ export default function App() {
           <Route path="/contactos" element={<Contactos />} />
           <Route path="/login" element={<Login />} />
 
-          {/* Admin */}
-          <Route path="/admin" element={<AdminLayout />} />
-          <Route path="/admin/artigos" element={<AdminLayout />} />
-          <Route path="/admin/conteudos" element={<AdminLayout />} />
-          <Route path="/admin/mensagens" element={<AdminLayout />} />
+          {/* ADMIN */}
+          <Route path="/admin" element={<AdminLayout />}>
+
+            <Route
+              index
+              element={<Dashboard />}
+            />
+
+            <Route
+              path="empresa"
+              element={<Empresa />}
+            />
+
+            <Route
+              path="servicos-admin"
+              element={<ServicosAdmin />}
+            />
+
+            <Route
+              path="artigos-admin"
+              element={<ArtigosAdmin />}
+            />
+
+            <Route
+              path="utilizadores"
+              element={<Utilizadores />}
+            />
+
+            <Route
+              path="documentos"
+              element={<Documentos />}
+            />
+
+            <Route
+              path="atividade"
+              element={<Atividade />}
+            />
+
+          </Route>
+
         </Routes>
+
       </BrowserRouter>
+
     </AuthProvider>
   );
 }
