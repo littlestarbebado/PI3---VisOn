@@ -29,7 +29,7 @@
   },
   "browserslist": {
     "production": [
-      ">0.2%",
+      "0.2%",
       "not dead",
       "not op_mini all"
     ],
@@ -39,17 +39,12 @@
       "last 1 safari version"
     ]
   },
-<<<<<<< HEAD
+  "description": "vison-project/ ├── backend/ ├── src/ └── package.json └── frontend/ ├── src/ └── package.json",
+  "main": "index.js",
   "devDependencies": {
     "react-scripts": "^5.0.1"
-  }
-=======
-  "description": "``` vison-project/ ├── backend/          ← API Express + Sequelize (SQLite) │   ├── src/ │   │   ├── models/   ← Admin, Artigo, ConteudoInstitucional, MensagemContacto │   │   ├── routes/   ← auth, conteudos, artigos, contacto │   │   ├── middlewares/ ← auth.js (JWT) │   │   └── server.js │   └── package.json │ └── frontend/         ← React + Bootstrap 5     ├── src/     │   ├── components/  ← Navbar, Footer, VisonLogo     │   ├── context/     ← AuthContext     │   ├── services/    ← api.js (axios)     │   ├── pages/     │   │   ├── public/  ← Home, Sobre, Servicos, Artigos, Contactos, Login     │   │   └── adm/     ← AdminLayout (Dashboard, Artigos, Conteúdos, Mensagens)     │   ├── App.js     │   └── App.css     └── package.json ```",
-  "main": "index.js",
-  "devDependencies": {},
+  },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs"
->>>>>>> fbcd4125e3a078c413dc8dc2c1d8b94186827a12
+  "license": "ISC"
 }
