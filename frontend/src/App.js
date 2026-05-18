@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Importa o componente que desenhámos
-import GestaoConteudo from './pages/GestaoConteudo'; 
+import DashboardGestor from './pages/gestor/DashboardGestor';
 
 function App() {
   return (
@@ -11,7 +11,7 @@ function App() {
         {/* Se depois criares uma Sidebar global, ela pode ficar aqui em cima do Routes */}
         <Routes>
           {/* Por agora, definimos a Gestão de Conteúdos como a página inicial "/" */}
-          <Route path="/" element={<GestaoConteudo />} />
+          <Route path="/gestor" element={<DashboardGestor />} />
           
           {/* Se quiseres que fique no caminho /gestao, usa este debaixo (descomentado) */}
           {/* <Route path="/gestao" element={<GestaoConteudo />} /> */}
