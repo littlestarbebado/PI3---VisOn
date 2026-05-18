@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { sequelize } = require('./src/models');
+const { sequelize, ensureDefaultAdmin } = require('./src/models');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,11 +13,13 @@ app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use('/api/auth', require('./src/routes/auth'));
+app.use('/api/clientes', require('./src/routes/clientes'));
 app.use('/api/conteudos', require('./src/routes/conteudos'));
 app.use('/api/artigos', require('./src/routes/artigos'));
 app.use('/api/contacto', require('./src/routes/contacto'));
 
-sequelize.sync({ alter: true }).then(() => {
+sequelize.sync({ alter: true }).then(async () => {
+  await ensureDefaultAdmin();
   console.log('Base de dados sincronizada');
   app.listen(PORT, () => console.log(`Servidor a correr na porta ${PORT}`));
 }).catch(err => console.error('Erro na BD:', err));

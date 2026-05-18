@@ -10,6 +10,8 @@ import Artigos from './pages/public/Artigos';
 import Contactos from './pages/public/Contactos';
 import Login from './pages/public/Login';
 import AdminLayout from './pages/adm/AdminLayout';
+import DashboardGestor from './pages/gestor/dashboardGestor';
+import DetalhesCliente from './pages/gestor/DetalhesCliente'; 
 
 export default function App() {
   return (
@@ -29,6 +31,10 @@ export default function App() {
           <Route path="/admin/artigos" element={<AdminLayout />} />
           <Route path="/admin/conteudos" element={<AdminLayout />} />
           <Route path="/admin/mensagens" element={<AdminLayout />} />
+
+
+          <Route path="/gestor" element={<DashboardGestor />} />
+          <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
