@@ -48,5 +48,29 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ erro: 'Erro interno ao processar o login no servidor.' });
   }
 });
+const { Cliente, Documento } = require('../models');
 
+// ROTA GET: /api/auth/stats (Trazer dados reais para o Dashboard)
+router.get('/stats', async (req, res) => {
+  try {
+    // 1. Conta quantos registos reais existem nas tabelas do Postgres
+    const totalClientes = await Cliente.count();
+    const totalDocumentos = await Documento.count();
+    
+    // Como ainda não temos a tabela de utilizadores gerais e logs a 100%, 
+    // mandamos estes mockados por agora, mas os dois principais já são REAIS!
+    const totalUtilizadores = 5; 
+    const atividadeHoje = 14;
+
+    res.json({
+      clientes: totalClientes,
+      documentos: totalDocumentos,
+      utilizadores: totalUtilizadores,
+      atividade: atividadeHoje
+    });
+  } catch (error) {
+    console.error('Erro ao ir buscar estatísticas:', error);
+    res.status(500).json({ erro: 'Erro ao carregar dados do Postgres.' });
+  }
+});
 module.exports = router;
