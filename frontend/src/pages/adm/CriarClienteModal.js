@@ -1,11 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
+import api from '../../services/api';
 
-export default function CriarClienteModal({
-  show,
-  onClose
-}) {
+export default function CriarClienteModal({ show, onClose }) {
+
+  // Estado do formulário com useState
+  const [nomeEmpresa, setNomeEmpresa] = useState('');
+  const [responsavel, setResponsavel] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [erro, setErro] = useState(null);
+  const [sucesso, setSucesso] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
   if (!show) return null;
+
+  function fechar() {
+    // Limpar estado ao fechar
+    setNomeEmpresa('');
+    setResponsavel('');
+    setEmail('');
+    setTelefone('');
+    setErro(null);
+    setSucesso(false);
+    onClose();
+  }
+
+  function submeter() {
+    setErro(null);
+
+    // Validação básica no frontend
+    if (!nomeEmpresa) {
+      setErro('O nome da empresa é obrigatório.');
+      return;
+    }
+
+    setCarregando(true);
+
+    // Pedido POST à API para criar o cliente
+    api.post('/clientes', {
+      nome: nomeEmpresa,
+      responsavel,
+      email,
+      status: 'Ativo'
+    })
+      .then(() => {
+        setSucesso(true);
+        setTimeout(() => fechar(), 1500);
+      })
+      .catch(err => {
+        const mensagem = err.response?.data?.erro || 'Erro ao criar cliente.';
+        setErro(mensagem);
+      })
+      .finally(() => setCarregando(false));
+  }
 
   return (
     <div
@@ -34,7 +81,7 @@ export default function CriarClienteModal({
 
         {/* FECHAR */}
         <button
-          onClick={onClose}
+          onClick={fechar}
           style={{
             position: 'absolute',
             right: '1rem',
@@ -57,250 +104,85 @@ export default function CriarClienteModal({
           Criar Novo Cliente
         </h4>
 
+        {/* MENSAGENS */}
+        {erro && (
+          <div className="alert alert-danger py-2" style={{ fontSize: '0.9rem' }}>
+            {erro}
+          </div>
+        )}
+
+        {sucesso && (
+          <div className="alert alert-success py-2" style={{ fontSize: '0.9rem' }}>
+            Cliente criado com sucesso!
+          </div>
+        )}
+
         {/* EMPRESA */}
-        <h5
-          style={{
-            fontWeight: 700,
-            marginBottom: '1rem'
-          }}
-        >
+        <h5 style={{ fontWeight: 700, marginBottom: '1rem' }}>
           Informações da Empresa
         </h5>
 
         <div className="mb-4">
-
-          <label
-            style={{
-              fontWeight: 600,
-              marginBottom: '0.5rem',
-              display: 'block'
-            }}
-          >
+          <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
             Nome da Empresa *
           </label>
-
           <input
             type="text"
             className="form-control"
+            value={nomeEmpresa}
+            onChange={(e) => setNomeEmpresa(e.target.value)}
           />
-
-        </div>
-
-        {/* CLIENTE */}
-        <h5
-          style={{
-            fontWeight: 700,
-            marginBottom: '1rem'
-          }}
-        >
-          Cliente (Acesso ao Portal)
-        </h5>
-
-        <div className="row g-3 mb-4">
-
-          <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Nome *
-            </label>
-
-            <input
-              type="text"
-              className="form-control"
-            />
-
-          </div>
-
-          <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Email *
-            </label>
-
-            <input
-              type="email"
-              className="form-control"
-            />
-
-          </div>
-
-          <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Telefone *
-            </label>
-
-            <input
-              type="text"
-              className="form-control"
-            />
-
-          </div>
-
         </div>
 
         {/* RESPONSÁVEL */}
-        <h5
-          style={{
-            fontWeight: 700,
-            marginBottom: '1rem'
-          }}
-        >
+        <h5 style={{ fontWeight: 700, marginBottom: '1rem' }}>
           Responsável de Segurança
         </h5>
 
         <div className="row g-3 mb-4">
 
           <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
+            <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
               Nome
             </label>
-
             <input
               type="text"
               className="form-control"
+              value={responsavel}
+              onChange={(e) => setResponsavel(e.target.value)}
             />
-
           </div>
 
           <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
+            <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
               Email
             </label>
-
             <input
               type="email"
               className="form-control"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-
           </div>
 
           <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
+            <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
               Telefone
             </label>
-
             <input
               type="text"
               className="form-control"
+              value={telefone}
+              onChange={(e) => setTelefone(e.target.value)}
             />
-
-          </div>
-
-        </div>
-
-        {/* CONTACTO */}
-        <h5
-          style={{
-            fontWeight: 700,
-            marginBottom: '1rem'
-          }}
-        >
-          Contacto Permanente
-        </h5>
-
-        <div className="row g-3 mb-4">
-
-          <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Nome
-            </label>
-
-            <input
-              type="text"
-              className="form-control"
-            />
-
-          </div>
-
-          <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Email
-            </label>
-
-            <input
-              type="email"
-              className="form-control"
-            />
-
-          </div>
-
-          <div className="col-md-6">
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Telefone
-            </label>
-
-            <input
-              type="text"
-              className="form-control"
-            />
-
           </div>
 
         </div>
 
         {/* BOTÃO */}
         <button
+          onClick={submeter}
+          disabled={carregando}
           className="btn w-100"
           style={{
             background: '#050b23',
@@ -310,7 +192,7 @@ export default function CriarClienteModal({
             fontWeight: 600
           }}
         >
-          Criar Cliente
+          {carregando ? 'A criar...' : 'Criar Cliente'}
         </button>
 
       </div>

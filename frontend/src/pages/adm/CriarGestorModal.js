@@ -1,11 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
+import api from '../../services/api';
 
-export default function CriarGestorModal({
-  show,
-  onClose
-}) {
+export default function CriarGestorModal({ show, onClose }) {
+
+  // Estado do formulário com useState
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [password, setPassword] = useState('');
+  const [erro, setErro] = useState(null);
+  const [sucesso, setSucesso] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
   if (!show) return null;
+
+  function fechar() {
+    // Limpar o estado ao fechar
+    setNome('');
+    setEmail('');
+    setTelefone('');
+    setPassword('');
+    setErro(null);
+    setSucesso(false);
+    onClose();
+  }
+
+  function submeter() {
+    setErro(null);
+
+    // Validação básica no frontend
+    if (!nome || !email || !password) {
+      setErro('Nome, email e password são obrigatórios.');
+      return;
+    }
+
+    setCarregando(true);
+
+    // Pedido POST à API para criar o gestor
+    api.post('/auth/gestores', { nome, email, telefone, password })
+      .then(() => {
+        setSucesso(true);
+        setTimeout(() => fechar(), 1500);
+      })
+      .catch(err => {
+        const mensagem = err.response?.data?.erro || 'Erro ao criar gestor.';
+        setErro(mensagem);
+      })
+      .finally(() => setCarregando(false));
+  }
 
   return (
     <div
@@ -32,7 +74,7 @@ export default function CriarGestorModal({
 
         {/* FECHAR */}
         <button
-          onClick={onClose}
+          onClick={fechar}
           style={{
             position: 'absolute',
             right: '1rem',
@@ -55,67 +97,73 @@ export default function CriarGestorModal({
           Criar Novo Gestor
         </h4>
 
-        {/* FORM */}
+        {/* MENSAGENS */}
+        {erro && (
+          <div className="alert alert-danger py-2" style={{ fontSize: '0.9rem' }}>
+            {erro}
+          </div>
+        )}
+
+        {sucesso && (
+          <div className="alert alert-success py-2" style={{ fontSize: '0.9rem' }}>
+            Gestor criado com sucesso!
+          </div>
+        )}
+
+        {/* FORMULÁRIO */}
         <div className="d-flex flex-column gap-3">
 
           <div>
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
+            <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
               Nome *
             </label>
-
             <input
               type="text"
               className="form-control"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
             />
-
           </div>
 
           <div>
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
+            <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
               Email *
             </label>
-
             <input
               type="email"
               className="form-control"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-
           </div>
 
           <div>
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
+            <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
               Telefone
             </label>
-
             <input
               type="text"
               className="form-control"
+              value={telefone}
+              onChange={(e) => setTelefone(e.target.value)}
             />
+          </div>
 
+          <div>
+            <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
+              Password *
+            </label>
+            <input
+              type="password"
+              className="form-control"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
 
           <button
+            onClick={submeter}
+            disabled={carregando}
             className="btn"
             style={{
               background: '#050b23',
@@ -126,7 +174,7 @@ export default function CriarGestorModal({
               fontWeight: 600
             }}
           >
-            Criar Gestor
+            {carregando ? 'A criar...' : 'Criar Gestor'}
           </button>
 
         </div>

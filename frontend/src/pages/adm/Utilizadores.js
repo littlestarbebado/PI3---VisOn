@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import CriarGestorModal from './CriarGestorModal';
 import CriarClienteModal from './CriarClienteModal';
 
@@ -8,42 +8,64 @@ export default function Utilizadores() {
   const [showGestorModal, setShowGestorModal] = useState(false);
   const [showClienteModal, setShowClienteModal] = useState(false);
 
-  const utilizadores = [
-    {
-      nome: 'Administrador',
-      role: 'Admin',
-      email: 'admin@cybersec.com',
-      telefone: '',
-      empresa: ''
-    },
-    {
-      nome: 'Gestor Silva',
-      role: 'Gestor',
-      email: 'gestor@cybersec.com',
-      telefone: '+351 912 345 678',
-      empresa: ''
-    },
-    {
-      nome: 'João Cliente',
-      role: 'Cliente',
-      email: 'cliente@empresa.com',
-      telefone: '+351 913 456 789',
-      empresa: 'TechCorp Solutions'
-    }
-  ];
+  // Estado para os utilizadores vindos da API (não hardcoded)
+  const [utilizadores, setUtilizadores] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+
+  // Função reutilizável para ir buscar os utilizadores à API
+  function carregarUtilizadores() {
+    setCarregando(true);
+    api.get('/auth/utilizadores')
+      .then(res => {
+        setUtilizadores(res.data);
+        setErro(null);
+      })
+      .catch(err => {
+        console.error('Erro ao carregar utilizadores:', err);
+        setErro('Não foi possível carregar os utilizadores.');
+      })
+      .finally(() => setCarregando(false));
+  }
+
+  // Carregar ao montar o componente
+  useEffect(() => {
+    carregarUtilizadores();
+  }, []);
+
+  // Eliminar utilizador
+  function eliminarUtilizador(id) {
+    if (!window.confirm('Tens a certeza que queres eliminar este utilizador?')) return;
+
+    api.delete(`/auth/utilizadores/${id}`)
+      .then(() => {
+        // Após eliminar, atualizar a lista (sem reload)
+        carregarUtilizadores();
+      })
+      .catch(err => {
+        console.error('Erro ao eliminar utilizador:', err);
+        alert('Erro ao eliminar utilizador.');
+      });
+  }
 
   return (
     <div>
 
-      {/* MODAIS */}
+      {/* MODAIS — ao fechar, recarregar a lista */}
       <CriarGestorModal
         show={showGestorModal}
-        onClose={() => setShowGestorModal(false)}
+        onClose={() => {
+          setShowGestorModal(false);
+          carregarUtilizadores();
+        }}
       />
 
       <CriarClienteModal
         show={showClienteModal}
-        onClose={() => setShowClienteModal(false)}
+        onClose={() => {
+          setShowClienteModal(false);
+          carregarUtilizadores();
+        }}
       />
 
       {/* HEADER */}
@@ -126,11 +148,20 @@ export default function Utilizadores() {
           Utilizadores Registados
         </h5>
 
-        {/* LISTA */}
-        {utilizadores.map((user, index) => (
+        {/* ESTADOS DE CARREGAMENTO / ERRO */}
+        {carregando && (
+          <p style={{ color: '#6b7280' }}>A carregar utilizadores...</p>
+        )}
+
+        {erro && (
+          <p style={{ color: '#ef4444' }}>{erro}</p>
+        )}
+
+        {/* LISTA — key usa o id real da base de dados */}
+        {!carregando && !erro && utilizadores.map((user) => (
 
           <div
-            key={index}
+            key={user.id}
             style={{
               border: '1px solid #f1f5f9',
               borderRadius: '12px',
@@ -195,7 +226,7 @@ export default function Utilizadores() {
                         fontWeight: 600
                       }}
                     >
-                      {user.role}
+                      {user.role || 'Gestor'}
                     </span>
 
                   </div>
@@ -220,38 +251,17 @@ export default function Utilizadores() {
                     </small>
                   )}
 
-                  {user.empresa && (
-                    <small
-                      style={{
-                        display: 'block',
-                        color: '#2563eb'
-                      }}
-                    >
-                      {user.empresa}
-                    </small>
-                  )}
-
                 </div>
 
               </div>
 
-              {/* AÇÕES */}
+              {/* AÇÕES — só visíveis para não-admins */}
               {user.role !== 'Admin' && (
 
                 <div className="d-flex gap-3">
 
                   <button
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      color: '#f97316',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <i className="bi bi-unlock"></i>
-                  </button>
-
-                  <button
+                    onClick={() => eliminarUtilizador(user.id)}
                     style={{
                       border: 'none',
                       background: 'transparent',
@@ -271,6 +281,11 @@ export default function Utilizadores() {
           </div>
 
         ))}
+
+        {/* Sem utilizadores */}
+        {!carregando && !erro && utilizadores.length === 0 && (
+          <p style={{ color: '#6b7280' }}>Nenhum utilizador encontrado.</p>
+        )}
 
       </div>
 

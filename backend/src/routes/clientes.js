@@ -1,8 +1,9 @@
 const router = require('express').Router();
 const { Cliente, AtivoTecnologico, Documento } = require('../models');
+const auth = require('../middlewares/auth');
 
-// 1. ROTA GET - Listar todos os clientes
-router.get('/', async (req, res) => {
+// GET /api/clientes — listar todos (protegido)
+router.get('/', auth, async (req, res) => {
   try {
     const clientes = await Cliente.findAll({
       order: [['nome', 'ASC']]
@@ -10,46 +11,12 @@ router.get('/', async (req, res) => {
     res.json(clientes);
   } catch (error) {
     console.error('Erro ao listar clientes:', error);
-    res.status(500).json({ erro: 'Erro interno ao aceder a lista de clientes.' });
+    res.status(500).json({ erro: 'Erro interno ao aceder à lista de clientes.' });
   }
 });
 
-// 2. ROTA POST - Criar um novo cliente (Com ou sem Ativo inicial)
-router.post('/', async (req, res) => {
-  try {
-    const { nome, responsavel, email, status, nomeAtivo, tipoAtivo, criticidadeAtivo } = req.body;
-
-    if (!nome) {
-      return res.status(400).json({ erro: 'O nome da empresa cliente é obrigatório.' });
-    }
-
-    // Criar o Cliente no Postgres
-    const novoCliente = await Cliente.create({
-      nome,
-      responsavel,
-      email,
-      status: status || 'Ativo'
-    });
-
-    // Se o utilizador preencheu um ativo no formulário, cria e associa ao ID do cliente
-    if (nomeAtivo && AtivoTecnologico) {
-      await AtivoTecnologico.create({
-        nome: nomeAtivo,
-        tipo: tipoAtivo || 'Não especificado',
-        criticidade: criticidadeAtivo || 'Média',
-        ClienteId: novoCliente.id
-      });
-    }
-
-    res.status(201).json({ mensagem: 'Cliente registado com sucesso!', cliente: novoCliente });
-  } catch (error) {
-    console.error('Erro ao criar cliente no POST:', error);
-    res.status(500).json({ erro: 'Erro interno ao salvar o cliente no PostgreSQL.' });
-  }
-});
-
-// 3. ROTA GET - Buscar detalhes de 1 cliente específico
-router.get('/:id', async (req, res) => {
+// GET /api/clientes/:id — detalhes de um cliente (protegido)
+router.get('/:id', auth, async (req, res) => {
   try {
     const cliente = await Cliente.findByPk(req.params.id, {
       include: [
@@ -59,7 +26,7 @@ router.get('/:id', async (req, res) => {
     });
 
     if (!cliente) {
-      return res.status(404).json({ erro: 'Cliente nao encontrado.' });
+      return res.status(404).json({ erro: 'Cliente não encontrado.' });
     }
 
     res.json({
@@ -73,56 +40,54 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+// POST /api/clientes — criar novo cliente (protegido)
+router.post('/', auth, async (req, res) => {
+  try {
+    const { nome, responsavel, email, status } = req.body;
 
-// Configuração do armazenamento do Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = 'uploads/';
-    // Garante que a pasta uploads existe no teu disco
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
+    if (!nome) {
+      return res.status(400).json({ erro: 'O campo nome é obrigatório.' });
     }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    // Guarda o ficheiro com o timestamp atual para evitar nomes duplicados
-    cb(null, Date.now() + '-' + file.originalname);
+
+    const cliente = await Cliente.create({ nome, responsavel, email, status });
+    res.status(201).json({ mensagem: 'Cliente criado com sucesso.', cliente });
+  } catch (error) {
+    console.error('Erro ao criar cliente:', error);
+    res.status(500).json({ erro: 'Erro interno ao criar cliente.' });
   }
 });
 
-const upload = multer({ storage: storage });
-
-// 4. ROTA POST - Fazer upload de um PDF para um cliente específico
-router.post('/:id/documentos', upload.single('pdf'), async (req, res) => {
+// PUT /api/clientes/:id — atualizar cliente (protegido)
+router.put('/:id', auth, async (req, res) => {
   try {
-    const clienteId = req.params.id;
-    const { nome, descricao } = req.body;
+    const cliente = await Cliente.findByPk(req.params.id);
 
-    if (!req.file) {
-      return res.status(400).json({ erro: 'Por favor, selecione um ficheiro PDF.' });
-    }
-
-    const cliente = await Cliente.findByPk(clienteId);
     if (!cliente) {
       return res.status(404).json({ erro: 'Cliente não encontrado.' });
     }
 
-    // Criar o registo do documento atrelado ao Cliente no Postgres
-    const novoDocumento = await Documento.create({
-      nome: nome || req.file.originalname,
-      tipo: 'PDF',
-      caminho: req.file.path.replace(/\\/g, '/'), // Normaliza as barras para a URL (/ em vez de \)
-      descricao: descricao || 'Sem descrição.',
-      ClienteId: clienteId
-    });
-
-    res.status(201).json({ mensagem: 'Documento enviado com sucesso!', documento: novoDocumento });
+    await cliente.update(req.body);
+    res.json({ mensagem: 'Cliente atualizado com sucesso.', cliente });
   } catch (error) {
-    console.error('Erro ao fazer upload do documento:', error);
-    res.status(500).json({ erro: 'Erro interno ao salvar o documento.' });
+    console.error('Erro ao atualizar cliente:', error);
+    res.status(500).json({ erro: 'Erro interno ao atualizar cliente.' });
+  }
+});
+
+// DELETE /api/clientes/:id — eliminar cliente (protegido)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const cliente = await Cliente.findByPk(req.params.id);
+
+    if (!cliente) {
+      return res.status(404).json({ erro: 'Cliente não encontrado.' });
+    }
+
+    await cliente.destroy();
+    res.status(204).send();
+  } catch (error) {
+    console.error('Erro ao eliminar cliente:', error);
+    res.status(500).json({ erro: 'Erro interno ao eliminar cliente.' });
   }
 });
 

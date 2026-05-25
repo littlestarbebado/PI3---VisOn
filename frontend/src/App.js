@@ -9,15 +9,29 @@ import Servicos from './pages/public/Servicos';
 import Artigos from './pages/public/Artigos';
 import Contactos from './pages/public/Contactos';
 import Login from './pages/public/Login';
+
+// Layout admin com Outlet — importado do local correto
 import AdminLayout from './layouts/AdminLayout';
+
+// Páginas do painel admin
+import Dashboard from './pages/adm/Dashboard';
+import ArtigosAdmin from './pages/adm/ArtigosAdmin';
+import Utilizadores from './pages/adm/Utilizadores';
+import Documentos from './pages/adm/Documentos';
+import Atividade from './pages/adm/Atividade';
+import Empresa from './pages/adm/Empresa';
+import ServicosAdmin from './pages/adm/ServicosAdmin';
+
+// Páginas do gestor
 import DashboardGestor from './pages/gestor/dashboardGestor';
-import DetalhesCliente from './pages/gestor/DetalhesCliente'; 
+import DetalhesCliente from './pages/gestor/DetalhesCliente';
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+
           {/* Público */}
           <Route path="/" element={<Home />} />
           <Route path="/sobre" element={<Sobre />} />
@@ -26,15 +40,21 @@ export default function App() {
           <Route path="/contactos" element={<Contactos />} />
           <Route path="/login" element={<Login />} />
 
-          {/* Admin */}
-          <Route path="/admin" element={<AdminLayout />} />
-          <Route path="/admin/artigos" element={<AdminLayout />} />
-          <Route path="/admin/conteudos" element={<AdminLayout />} />
-          <Route path="/admin/mensagens" element={<AdminLayout />} />
+          {/* Admin — AdminLayout usa <Outlet /> para renderizar as páginas filhas */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="artigos" element={<ArtigosAdmin />} />
+            <Route path="conteudos" element={<Empresa />} />
+            <Route path="servicos" element={<ServicosAdmin />} />
+            <Route path="utilizadores" element={<Utilizadores />} />
+            <Route path="documentos" element={<Documentos />} />
+            <Route path="atividade" element={<Atividade />} />
+          </Route>
 
-
+          {/* Gestor */}
           <Route path="/gestor" element={<DashboardGestor />} />
           <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>

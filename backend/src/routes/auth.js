@@ -2,50 +2,91 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Admin } = require('../models');
+const auth = require('../middlewares/auth');
+const SECRET = process.env.JWT_SECRET || 'vison_secret_2024';
 
-// ROTA POST: /api/auth/login
+// POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const emailNormalizado = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const admin = await Admin.findOne({ where: { email } });
+    if (!admin || !(await bcrypt.compare(password, admin.password)))
+      return res.status(401).json({ erro: 'Credenciais inválidas' });
 
-    // 1. Verificar se o utilizador preencheu os campos
-    if (!emailNormalizado || !password) {
-      return res.status(400).json({ erro: 'Por favor, preencha todos os campos.' });
-    }
+    const token = jwt.sign({ id: admin.id, email: admin.email, role: admin.role }, SECRET, { expiresIn: '8h' });
+    res.json({ token, admin: { id: admin.id, nome: admin.nome, email: admin.email, role: admin.role } });
+  } catch (e) {
+    res.status(500).json({ erro: e.message });
+  }
+});
 
-    // 2. Procurar o Admin pelo email no Postgres
-    const admin = await Admin.findOne({ where: { email: emailNormalizado } });
-    if (!admin) {
-      return res.status(401).json({ erro: 'Credenciais inválidas. Verifique o email.' });
-    }
+// GET /api/auth/me
+router.get('/me', auth, async (req, res) => {
+  try {
+    const admin = await Admin.findByPk(req.admin.id, { attributes: { exclude: ['password'] } });
+    res.json(admin);
+  } catch (e) {
+    res.status(500).json({ erro: e.message });
+  }
+});
 
-    // 3. Verificar se a password bate certo com o hash encriptado
-    const passwordCorreta = await bcrypt.compare(password, admin.password);
-    if (!passwordCorreta) {
-      return res.status(401).json({ erro: 'Credenciais inválidas. Verifique a password.' });
-    }
-
-    // 4. Gerar o Token JWT seguro (expira em 1 dia)
-    const token = jwt.sign(
-      { id: admin.id, email: admin.email, nome: admin.nome },
-      process.env.JWT_SECRET || 'vison_secreto_super_protegido_2026',
-      { expiresIn: '1d' }
-    );
-
-    // 5. Responder com sucesso e enviar os dados para o React guardar
-    res.json({
-      mensagem: 'Login efetuado com sucesso!',
-      token,
-      user: {
-        nome: admin.nome,
-        email: admin.email
-      }
+// GET /api/auth/utilizadores — listar todos os admins/gestores (protegido)
+router.get('/utilizadores', auth, async (req, res) => {
+  try {
+    const utilizadores = await Admin.findAll({
+      attributes: { exclude: ['password'] },
+      order: [['nome', 'ASC']]
     });
+    res.json(utilizadores);
+  } catch (e) {
+    res.status(500).json({ erro: e.message });
+  }
+});
 
-  } catch (error) {
-    console.error('Erro no login:', error);
-    res.status(500).json({ erro: 'Erro interno ao processar o login no servidor.' });
+// POST /api/auth/gestores — criar novo gestor (protegido)
+router.post('/gestores', auth, async (req, res) => {
+  try {
+    const { nome, email, password, telefone } = req.body;
+
+    if (!nome || !email || !password) {
+      return res.status(400).json({ erro: 'Nome, email e password são obrigatórios.' });
+    }
+
+    const existe = await Admin.findOne({ where: { email } });
+    if (existe) {
+      return res.status(409).json({ erro: 'Já existe um utilizador com este email.' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    const gestor = await Admin.create({ nome, email, password: hash, telefone, role: 'Gestor' });
+
+    res.status(201).json({
+      mensagem: 'Gestor criado com sucesso.',
+      gestor: { id: gestor.id, nome: gestor.nome, email: gestor.email, role: gestor.role }
+    });
+  } catch (e) {
+    res.status(500).json({ erro: e.message });
+  }
+});
+
+// DELETE /api/auth/utilizadores/:id — eliminar utilizador (protegido)
+router.delete('/utilizadores/:id', auth, async (req, res) => {
+  try {
+    const utilizador = await Admin.findByPk(req.params.id);
+
+    if (!utilizador) {
+      return res.status(404).json({ erro: 'Utilizador não encontrado.' });
+    }
+
+    // Proteger o admin principal
+    if (utilizador.email === 'admin@vison.pt') {
+      return res.status(403).json({ erro: 'Não é possível eliminar o administrador principal.' });
+    }
+
+    await utilizador.destroy();
+    res.status(204).send();
+  } catch (e) {
+    res.status(500).json({ erro: e.message });
   }
 });
 

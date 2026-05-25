@@ -8,5 +8,8 @@ module.exports = (sequelize) => sequelize.define('Artigo', {
   imagem: { type: DataTypes.STRING },
   slug: { type: DataTypes.STRING, unique: true },
   publicado: { type: DataTypes.BOOLEAN, defaultValue: false },
-  dataPublicacao: { type: DataTypes.DATE }
+  dataPublicacao: { type: DataTypes.DATE },
+  autor: { type: DataTypes.STRING },
+  // Campo categoria adicionado para suportar o filtro na página pública e a seleção no backoffice
+  categoria: { type: DataTypes.STRING, defaultValue: 'Geral' }
 });
