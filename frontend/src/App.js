@@ -9,7 +9,7 @@ import Servicos from './pages/public/Servicos';
 import Artigos from './pages/public/Artigos';
 import Contactos from './pages/public/Contactos';
 import Login from './pages/public/Login';
-import AdminLayout from './pages/adm/AdminLayout';
+import AdminLayout from './layouts/AdminLayout';
 import DashboardGestor from './pages/gestor/dashboardGestor';
 import DetalhesCliente from './pages/gestor/DetalhesCliente'; 
 

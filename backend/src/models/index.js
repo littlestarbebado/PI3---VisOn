@@ -29,20 +29,34 @@ Documento.belongsTo(Cliente, { foreignKey: 'ClienteId' });
 async function ensureDefaultAdmin() {
   try {
     const bcrypt = require('bcryptjs');
+    const defaultEmail = 'admin@vison.pt';
+    const defaultPassword = 'Admin@1234';
+    const defaultHash = await bcrypt.hash(defaultPassword, 10);
 
-    const [, criado] = await Admin.findOrCreate({
-      where: { email: 'admin@vison.pt' },
-      defaults: {
+    const admin = await Admin.findOne({ where: { email: defaultEmail } });
+
+    if (!admin) {
+      await Admin.create({
         nome: 'Administrador',
-        password: await bcrypt.hash('Admin@1234', 10)
-      }
-    });
-
-    if (criado) {
-      console.log('Admin padrao criado no Postgres: admin@vison.pt / Admin@1234');
-    } else {
-      console.log('Admin padrao ja verificado e ativo no PostgreSQL.');
+        email: defaultEmail,
+        password: defaultHash
+      });
+      console.log(`Admin padrao criado no Postgres: ${defaultEmail} / ${defaultPassword}`);
+      return;
     }
+
+    const passwordValida = await bcrypt.compare(defaultPassword, admin.password || '');
+
+    if (!passwordValida) {
+      await admin.update({
+        nome: admin.nome || 'Administrador',
+        password: defaultHash
+      });
+      console.log(`Password do Admin padrao reposta no Postgres: ${defaultEmail} / ${defaultPassword}`);
+      return;
+    }
+
+    console.log('Admin padrao ja verificado e ativo no PostgreSQL.');
   } catch (err) {
     console.error('Erro ao verificar/criar Admin padrao:', err);
   }

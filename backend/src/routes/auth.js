@@ -2,28 +2,51 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Admin } = require('../models');
-const SECRET = process.env.JWT_SECRET || 'vison_secret_2024';
 
-// POST /api/auth/login
+// ROTA POST: /api/auth/login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const admin = await Admin.findOne({ where: { email } });
-    if (!admin || !(await bcrypt.compare(password, admin.password)))
-      return res.status(401).json({ erro: 'Credenciais inválidas' });
+    const emailNormalizado = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
-    const token = jwt.sign({ id: admin.id, email: admin.email }, SECRET, { expiresIn: '8h' });
-    res.json({ token, admin: { id: admin.id, nome: admin.nome, email: admin.email } });
-  } catch (e) {
-    res.status(500).json({ erro: e.message });
+    // 1. Verificar se o utilizador preencheu os campos
+    if (!emailNormalizado || !password) {
+      return res.status(400).json({ erro: 'Por favor, preencha todos os campos.' });
+    }
+
+    // 2. Procurar o Admin pelo email no Postgres
+    const admin = await Admin.findOne({ where: { email: emailNormalizado } });
+    if (!admin) {
+      return res.status(401).json({ erro: 'Credenciais inválidas. Verifique o email.' });
+    }
+
+    // 3. Verificar se a password bate certo com o hash encriptado
+    const passwordCorreta = await bcrypt.compare(password, admin.password);
+    if (!passwordCorreta) {
+      return res.status(401).json({ erro: 'Credenciais inválidas. Verifique a password.' });
+    }
+
+    // 4. Gerar o Token JWT seguro (expira em 1 dia)
+    const token = jwt.sign(
+      { id: admin.id, email: admin.email, nome: admin.nome },
+      process.env.JWT_SECRET || 'vison_secreto_super_protegido_2026',
+      { expiresIn: '1d' }
+    );
+
+    // 5. Responder com sucesso e enviar os dados para o React guardar
+    res.json({
+      mensagem: 'Login efetuado com sucesso!',
+      token,
+      user: {
+        nome: admin.nome,
+        email: admin.email
+      }
+    });
+
+  } catch (error) {
+    console.error('Erro no login:', error);
+    res.status(500).json({ erro: 'Erro interno ao processar o login no servidor.' });
   }
-});
-
-// GET /api/auth/me
-const auth = require('../middlewares/auth');
-router.get('/me', auth, async (req, res) => {
-  const admin = await Admin.findByPk(req.admin.id, { attributes: { exclude: ['password'] } });
-  res.json(admin);
 });
 
 module.exports = router;
