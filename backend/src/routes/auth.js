@@ -1,8 +1,9 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Admin } = require('../models');
+const { Admin, Cliente, Documento } = require('../models');
 const auth = require('../middlewares/auth');
+const { requireRole } = auth;
 const SECRET = process.env.JWT_SECRET || 'vison_secret_2024';
 
 // POST /api/auth/login
@@ -10,8 +11,9 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const admin = await Admin.findOne({ where: { email } });
-    if (!admin || !(await bcrypt.compare(password, admin.password)))
-      return res.status(401).json({ erro: 'Credenciais inválidas' });
+    if (!admin || !(await bcrypt.compare(password, admin.password))) {
+      return res.status(401).json({ erro: 'Credenciais invalidas' });
+    }
 
     const token = jwt.sign({ id: admin.id, email: admin.email, role: admin.role }, SECRET, { expiresIn: '8h' });
     res.json({ token, admin: { id: admin.id, nome: admin.nome, email: admin.email, role: admin.role } });
@@ -30,8 +32,32 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
-// GET /api/auth/utilizadores — listar todos os admins/gestores (protegido)
-router.get('/utilizadores', auth, async (req, res) => {
+// GET /api/auth/stats
+router.get('/stats', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const clientes = await Cliente.count();
+    const documentos = await Documento.count();
+    const clientesRecentes = await Cliente.findAll({
+      limit: 2,
+      order: [['createdAt', 'DESC']],
+      attributes: ['id', 'nome', 'email', 'score']
+    });
+
+    res.json({
+      clientes,
+      documentos,
+      utilizadores: 5,
+      atividade: 12,
+      clientesRecentes
+    });
+  } catch (error) {
+    console.error('Erro ao ir buscar estatisticas:', error);
+    res.status(500).json({ erro: 'Erro ao carregar dados do Postgres.' });
+  }
+});
+
+// GET /api/auth/utilizadores - listar todos os admins/gestores (protegido)
+router.get('/utilizadores', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const utilizadores = await Admin.findAll({
       attributes: { exclude: ['password'] },
@@ -43,18 +69,18 @@ router.get('/utilizadores', auth, async (req, res) => {
   }
 });
 
-// POST /api/auth/gestores — criar novo gestor (protegido)
-router.post('/gestores', auth, async (req, res) => {
+// POST /api/auth/gestores - criar novo gestor (protegido)
+router.post('/gestores', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const { nome, email, password, telefone } = req.body;
 
     if (!nome || !email || !password) {
-      return res.status(400).json({ erro: 'Nome, email e password são obrigatórios.' });
+      return res.status(400).json({ erro: 'Nome, email e password sao obrigatorios.' });
     }
 
     const existe = await Admin.findOne({ where: { email } });
     if (existe) {
-      return res.status(409).json({ erro: 'Já existe um utilizador com este email.' });
+      return res.status(409).json({ erro: 'Ja existe um utilizador com este email.' });
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -69,18 +95,17 @@ router.post('/gestores', auth, async (req, res) => {
   }
 });
 
-// DELETE /api/auth/utilizadores/:id — eliminar utilizador (protegido)
-router.delete('/utilizadores/:id', auth, async (req, res) => {
+// DELETE /api/auth/utilizadores/:id - eliminar utilizador (protegido)
+router.delete('/utilizadores/:id', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const utilizador = await Admin.findByPk(req.params.id);
 
     if (!utilizador) {
-      return res.status(404).json({ erro: 'Utilizador não encontrado.' });
+      return res.status(404).json({ erro: 'Utilizador nao encontrado.' });
     }
 
-    // Proteger o admin principal
     if (utilizador.email === 'admin@vison.pt') {
-      return res.status(403).json({ erro: 'Não é possível eliminar o administrador principal.' });
+      return res.status(403).json({ erro: 'Nao e possivel eliminar o administrador principal.' });
     }
 
     await utilizador.destroy();

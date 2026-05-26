@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { Artigo } = require('../models');
 const auth = require('../middlewares/auth');
+const { requireRole } = auth;
 
 // GET /api/artigos — público: só publicados
 router.get('/', async (req, res) => {
@@ -15,7 +16,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/artigos/admin — admin: todos
-router.get('/admin', auth, async (req, res) => {
+router.get('/admin', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const artigos = await Artigo.findAll({ order: [['createdAt', 'DESC']] });
     res.json(artigos);
@@ -32,7 +33,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // POST /api/artigos — admin
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const slug = req.body.titulo.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     const artigo = await Artigo.create({ ...req.body, slug, dataPublicacao: req.body.publicado ? new Date() : null });
@@ -41,7 +42,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // PUT /api/artigos/:id — admin
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const artigo = await Artigo.findByPk(req.params.id);
     if (!artigo) return res.status(404).json({ erro: 'Não encontrado' });
@@ -52,7 +53,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // DELETE /api/artigos/:id — admin
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireRole(['Admin']), async (req, res) => {
   try {
     await Artigo.destroy({ where: { id: req.params.id } });
     res.json({ mensagem: 'Artigo eliminado' });

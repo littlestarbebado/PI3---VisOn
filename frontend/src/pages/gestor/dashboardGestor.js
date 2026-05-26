@@ -14,6 +14,8 @@ const DashboardGestor = () => {
   const [nome, setNome] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [password, setPassword] = useState('');
 
   // Estado para o primeiro ativo opcional
   const [nomeAtivo, setNomeAtivo] = useState('');
@@ -46,7 +48,23 @@ const DashboardGestor = () => {
       return;
     }
 
-    const dados = { nome, responsavel, email, nomeAtivo, tipoAtivo, criticidadeAtivo };
+    if (!email || !password) {
+      setErro('Email e password inicial sao obrigatorios.');
+      return;
+    }
+
+    const dados = {
+      nome,
+      email,
+      telefone,
+      password,
+      respSegurancaNome: responsavel,
+      respSegurancaEmail: email,
+      respSegurancaTelefone: telefone,
+      nomeAtivo,
+      tipoAtivo,
+      criticidadeAtivo
+    };
 
     api.post('/clientes', dados)
       .then(() => {
@@ -54,6 +72,8 @@ const DashboardGestor = () => {
         setNome('');
         setResponsavel('');
         setEmail('');
+        setTelefone('');
+        setPassword('');
         setNomeAtivo('');
         setTipoAtivo('');
         setCriticidadeAtivo('Média');
@@ -125,6 +145,28 @@ const DashboardGestor = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="cliente@empresa.com"
+              />
+            </div>
+
+            <div className="col-md-4">
+              <label className="form-label text-muted small">Telefone</label>
+              <input
+                type="text"
+                className="form-control bg-secondary text-white border-0"
+                value={telefone}
+                onChange={e => setTelefone(e.target.value)}
+                placeholder="+351 960 000 000"
+              />
+            </div>
+
+            <div className="col-md-4">
+              <label className="form-label text-muted small">Password Inicial *</label>
+              <input
+                type="text"
+                className="form-control bg-secondary text-white border-0"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Password temporaria"
               />
             </div>
 
@@ -205,9 +247,9 @@ const DashboardGestor = () => {
                 clientes.map(c => (
                   <tr key={c.id} className="border-secondary">
                     <td className="ps-4 fw-bold text-info">{c.nome}</td>
-                    <td>{c.responsavel || 'Não alocado'}</td>
+                    <td>{c.respSegurancaNome || 'Não alocado'}</td>
                     <td>{c.email || 'N/D'}</td>
-                    <td><span className="badge bg-success">{c.status}</span></td>
+                    <td><span className={`badge ${c.status ? 'bg-success' : 'bg-secondary'}`}>{c.status ? 'Ativo' : 'Inativo'}</span></td>
                     <td className="text-end pe-4">
                       <button
                         onClick={() => navigate(`cliente/${c.id}`)}

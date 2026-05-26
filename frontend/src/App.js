@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 import Home from './pages/public/Home';
@@ -26,6 +27,10 @@ import ServicosAdmin from './pages/adm/ServicosAdmin';
 import DashboardGestor from './pages/gestor/dashboardGestor';
 import DetalhesCliente from './pages/gestor/DetalhesCliente';
 
+//Páginas do cliente
+import DashboardCliente from './pages/cliente/DashboardCliente';
+import SubmissoesCliente from './pages/cliente/SubmissoesCliente';
+
 export default function App() {
   return (
     <AuthProvider>
@@ -41,7 +46,14 @@ export default function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Admin — AdminLayout usa <Outlet /> para renderizar as páginas filhas */}
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['Admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Dashboard />} />
             <Route path="artigos" element={<ArtigosAdmin />} />
             <Route path="conteudos" element={<Empresa />} />
@@ -52,8 +64,27 @@ export default function App() {
           </Route>
 
           {/* Gestor */}
-          <Route path="/gestor" element={<DashboardGestor />} />
-          <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
+          <Route
+            path="/gestor"
+            element={
+              <ProtectedRoute allowedRoles={['Gestor']}>
+                <DashboardGestor />
+              </ProtectedRoute>
+            }
+          />
+          {/* Rota do Cliente Protegida */}
+<Route path="/cliente" element={<ProtectedRoute allowedRoles={['Cliente']} />}>
+  <Route index element={<DashboardCliente />} />
+  <Route path="submissoes" element={<SubmissoesCliente />} />
+</Route>
+          <Route
+            path="/gestor/cliente/:id"
+            element={
+              <ProtectedRoute allowedRoles={['Gestor']}>
+                <DetalhesCliente />
+              </ProtectedRoute>
+            }
+          />
 
         </Routes>
       </BrowserRouter>

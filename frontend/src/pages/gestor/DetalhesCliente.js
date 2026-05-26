@@ -95,7 +95,7 @@ const DetalhesCliente = () => {
       <div className="mb-5">
         <h1 className="display-5 fw-bold">{cliente.nome}</h1>
         <p className="text-muted">
-          Responsável: <strong className="text-white">{cliente.responsavel || 'Não definido'}</strong> |{' '}
+          Responsável: <strong className="text-white">{cliente.respSegurancaNome || 'Não definido'}</strong> |{' '}
           Email: <strong className="text-white">{cliente.email || 'Sem contacto'}</strong>
         </p>
       </div>

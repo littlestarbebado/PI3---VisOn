@@ -39,7 +39,8 @@ async function ensureDefaultAdmin() {
       await Admin.create({
         nome: 'Administrador',
         email: defaultEmail,
-        password: defaultHash
+        password: defaultHash,
+        role: 'Admin'
       });
       console.log(`Admin padrao criado no Postgres: ${defaultEmail} / ${defaultPassword}`);
       return;
@@ -50,9 +51,16 @@ async function ensureDefaultAdmin() {
     if (!passwordValida) {
       await admin.update({
         nome: admin.nome || 'Administrador',
-        password: defaultHash
+        password: defaultHash,
+        role: 'Admin'
       });
       console.log(`Password do Admin padrao reposta no Postgres: ${defaultEmail} / ${defaultPassword}`);
+      return;
+    }
+
+    if (admin.role !== 'Admin') {
+      await admin.update({ role: 'Admin' });
+      console.log(`Role do Admin padrao corrigida para Admin: ${defaultEmail}`);
       return;
     }
 

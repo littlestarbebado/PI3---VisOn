@@ -8,6 +8,7 @@ export default function CriarClienteModal({ show, onClose }) {
   const [responsavel, setResponsavel] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
+  const [password, setPassword] = useState('');
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
@@ -20,6 +21,7 @@ export default function CriarClienteModal({ show, onClose }) {
     setResponsavel('');
     setEmail('');
     setTelefone('');
+    setPassword('');
     setErro(null);
     setSucesso(false);
     onClose();
@@ -34,14 +36,23 @@ export default function CriarClienteModal({ show, onClose }) {
       return;
     }
 
+    if (!email || !password) {
+      setErro('Email e password inicial sao obrigatorios.');
+      return;
+    }
+
     setCarregando(true);
 
     // Pedido POST à API para criar o cliente
     api.post('/clientes', {
       nome: nomeEmpresa,
-      responsavel,
       email,
-      status: 'Ativo'
+      telefone,
+      password,
+      respSegurancaNome: responsavel,
+      respSegurancaEmail: email,
+      respSegurancaTelefone: telefone,
+      status: true
     })
       .then(() => {
         setSucesso(true);
@@ -174,6 +185,18 @@ export default function CriarClienteModal({ show, onClose }) {
               className="form-control"
               value={telefone}
               onChange={(e) => setTelefone(e.target.value)}
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
+              Password Inicial *
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 

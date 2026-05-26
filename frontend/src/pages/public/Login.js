@@ -17,8 +17,11 @@ export default function Login() {
     setErro('');
     setLoading(true);
     try {
-      await login(email, password);
-      nav('/admin');
+      const data = await login(email, password);
+      const userRole = data.admin?.role || data.user?.role || data.cliente?.role;
+      if (userRole === 'Gestor') nav('/gestor');
+      else if (userRole === 'Cliente') nav('/cliente');
+      else nav('/admin');
     } catch {
       setErro('Credenciais inválidas. Verifique o email e a palavra-passe.');
     } finally {
