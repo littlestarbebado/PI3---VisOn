@@ -11,12 +11,25 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const admin = await Admin.findOne({ where: { email } });
-    if (!admin || !(await bcrypt.compare(password, admin.password))) {
+    if (admin && (await bcrypt.compare(password, admin.password))) {
+      const token = jwt.sign({ id: admin.id, email: admin.email, role: admin.role }, SECRET, { expiresIn: '8h' });
+      return res.json({ token, admin: { id: admin.id, nome: admin.nome, email: admin.email, role: admin.role } });
+    }
+
+    const cliente = await Cliente.findOne({ where: { email } });
+    if (cliente && (await bcrypt.compare(password, cliente.password))) {
+      const token = jwt.sign({ id: cliente.id, email: cliente.email, role: 'Cliente' }, SECRET, { expiresIn: '8h' });
+      return res.json({
+        token,
+        cliente: { id: cliente.id, nome: cliente.nome, email: cliente.email, role: 'Cliente' }
+      });
+    }
+
+    if (!admin && !cliente) {
       return res.status(401).json({ erro: 'Credenciais invalidas' });
     }
 
-    const token = jwt.sign({ id: admin.id, email: admin.email, role: admin.role }, SECRET, { expiresIn: '8h' });
-    res.json({ token, admin: { id: admin.id, nome: admin.nome, email: admin.email, role: admin.role } });
+    return res.status(401).json({ erro: 'Credenciais invalidas' });
   } catch (e) {
     res.status(500).json({ erro: e.message });
   }
@@ -25,7 +38,14 @@ router.post('/login', async (req, res) => {
 // GET /api/auth/me
 router.get('/me', auth, async (req, res) => {
   try {
+    if (req.user?.role === 'Cliente') {
+      const cliente = await Cliente.findByPk(req.user.id, { attributes: { exclude: ['password'] } });
+      if (!cliente) return res.status(404).json({ erro: 'Cliente nao encontrado.' });
+      return res.json({ ...cliente.toJSON(), role: 'Cliente' });
+    }
+
     const admin = await Admin.findByPk(req.admin.id, { attributes: { exclude: ['password'] } });
+    if (!admin) return res.status(404).json({ erro: 'Utilizador nao encontrado.' });
     res.json(admin);
   } catch (e) {
     res.status(500).json({ erro: e.message });

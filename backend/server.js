@@ -18,6 +18,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Registo de Rotas do Sistema
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/clientes', require('./src/routes/clientes')); // <--- Tem de estar aqui!
+app.use('/api/ativos', require('./src/routes/ativos'));
 app.use('/api/conteudos', require('./src/routes/conteudos'));
 app.use('/api/artigos', require('./src/routes/artigos'));
 app.use('/api/contacto', require('./src/routes/contacto'));
