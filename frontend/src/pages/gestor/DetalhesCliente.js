@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -9,6 +9,9 @@ const DetalhesCliente = () => {
   const [cliente, setCliente] = useState(null);
   const [ativos, setAtivos] = useState([]);
   const [documentos, setDocumentos] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
+  const [pedidoAtivoId, setPedidoAtivoId] = useState(null);
+  const [mensagemPedido, setMensagemPedido] = useState('');
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
   const [abaAtiva, setAbaAtiva] = useState('ativos');
@@ -20,7 +23,7 @@ const DetalhesCliente = () => {
   const [uploadErro, setUploadErro] = useState(null);
   const [uploadSucesso, setUploadSucesso] = useState(false);
 
-  const carregarDetalhes = () => {
+  const carregarDetalhes = useCallback(() => {
     api.get(`/clientes/${id}`)
       .then(response => {
         setCliente(response.data.cliente);
@@ -33,11 +36,67 @@ const DetalhesCliente = () => {
         setErro('Nao foi possivel carregar as informacoes deste cliente.');
       })
       .finally(() => setLoading(false));
-  };
+  }, [id]);
+
+  const carregarPedidos = useCallback(() => {
+    api.get(`/pedidos?clienteId=${id}`)
+      .then(response => {
+        const lista = response.data || [];
+        setPedidos(lista);
+        setPedidoAtivoId(prev => (
+          lista.some(pedido => pedido.id === prev) ? prev : lista[0]?.id || null
+        ));
+      })
+      .catch(error => {
+        console.error('Erro ao carregar pedidos:', error);
+      });
+  }, [id]);
 
   useEffect(() => {
     carregarDetalhes();
-  }, [id]);
+    carregarPedidos();
+  }, [carregarDetalhes, carregarPedidos]);
+
+  const pedidoAtivo = pedidos.find(pedido => pedido.id === pedidoAtivoId) || pedidos[0];
+
+  const estadoBadgeClass = (estado) => {
+    if (estado === 'Pendente') return 'bg-danger';
+    if (estado === 'Em Análise') return 'bg-primary';
+    if (estado === 'Concluído') return 'bg-success';
+    return 'bg-secondary';
+  };
+
+  const responderPedido = (event) => {
+    event.preventDefault();
+    if (!pedidoAtivo || !mensagemPedido.trim()) return;
+
+    api.post(`/pedidos/${pedidoAtivo.id}/mensagens`, { texto: mensagemPedido })
+      .then(response => {
+        setPedidos(prev => prev.map(pedido => (
+          pedido.id === pedidoAtivo.id
+            ? { ...pedido, mensagens: [...(pedido.mensagens || []), response.data] }
+            : pedido
+        )));
+        setMensagemPedido('');
+      })
+      .catch(error => {
+        setErro(error.response?.data?.erro || 'Nao foi possivel enviar a mensagem.');
+      });
+  };
+
+  const alterarEstadoPedido = (estado) => {
+    if (!pedidoAtivo) return;
+
+    api.put(`/pedidos/${pedidoAtivo.id}/estado`, { estado })
+      .then(response => {
+        setPedidos(prev => prev.map(pedido => (
+          pedido.id === pedidoAtivo.id ? { ...pedido, estado: response.data.estado } : pedido
+        )));
+      })
+      .catch(error => {
+        setErro(error.response?.data?.erro || 'Nao foi possivel alterar o estado do pedido.');
+      });
+  };
 
   const handleUpload = () => {
     setUploadErro(null);
@@ -104,6 +163,14 @@ const DetalhesCliente = () => {
             onClick={() => setAbaAtiva('documentos')}
           >
             Documentacao Tecnica ({documentos.length})
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link text-white border-0 ${abaAtiva === 'pedidos' ? 'active bg-secondary fw-bold' : ''}`}
+            onClick={() => setAbaAtiva('pedidos')}
+          >
+            Pedidos ({pedidos.length})
           </button>
         </li>
       </ul>
@@ -250,6 +317,91 @@ const DetalhesCliente = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {abaAtiva === 'pedidos' && (
+        <div className="row g-4">
+          <div className="col-lg-4">
+            <div className="card bg-dark border-secondary">
+              <div className="card-header border-secondary text-info fw-bold">
+                Pedidos deste Cliente
+              </div>
+              <div className="list-group list-group-flush">
+                {pedidos.length === 0 ? (
+                  <div className="p-3 text-muted">Este cliente ainda nao abriu pedidos.</div>
+                ) : pedidos.map(pedido => (
+                  <button
+                    key={pedido.id}
+                    type="button"
+                    className={`list-group-item list-group-item-action border-secondary text-start ${pedidoAtivo?.id === pedido.id ? 'bg-secondary text-white' : 'bg-dark text-white'}`}
+                    onClick={() => setPedidoAtivoId(pedido.id)}
+                  >
+                    <div className="d-flex justify-content-between align-items-center gap-2">
+                      <span className="fw-semibold">{pedido.titulo}</span>
+                      <span className={`badge ${estadoBadgeClass(pedido.estado)}`}>{pedido.estado}</span>
+                    </div>
+                    <small className="text-white-50">{pedido.mensagens?.length || 0} mensagens</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="col-lg-8">
+            <div className="card bg-dark border-secondary" style={{ minHeight: 620 }}>
+              {pedidoAtivo ? (
+                <>
+                  <div className="card-header border-secondary">
+                    <div className="d-flex justify-content-between align-items-start gap-3">
+                      <div>
+                        <h5 className="mb-1">{pedidoAtivo.titulo}</h5>
+                        <p className="text-muted small mb-0">{pedidoAtivo.descricao}</p>
+                      </div>
+                      <select
+                        className="form-select form-select-sm bg-secondary text-white border-0"
+                        style={{ maxWidth: 180 }}
+                        value={pedidoAtivo.estado}
+                        onChange={event => alterarEstadoPedido(event.target.value)}
+                      >
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em Análise">Em Análise</option>
+                        <option value="Concluído">Concluído</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="card-body d-flex flex-column" style={{ height: 500, overflowY: 'auto', background: '#101522' }}>
+                    {(pedidoAtivo.mensagens || []).map(msg => {
+                      const equipa = msg.enviadoPor === 'Gestor' || msg.enviadoPor === 'Admin';
+                      return (
+                        <div key={msg.id} className={`d-flex mb-3 ${equipa ? 'justify-content-end' : 'justify-content-start'}`}>
+                          <div className={`p-3 rounded-3 ${equipa ? 'bg-primary text-white' : 'bg-secondary text-white'}`} style={{ maxWidth: '72%' }}>
+                            <div className="small fw-bold mb-1">{msg.enviadoPor}</div>
+                            <div>{msg.texto}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <form onSubmit={responderPedido} className="card-footer border-secondary d-flex gap-2">
+                    <input
+                      className="form-control bg-secondary text-white border-0"
+                      placeholder="Responder ao cliente..."
+                      value={mensagemPedido}
+                      onChange={event => setMensagemPedido(event.target.value)}
+                    />
+                    <button type="submit" className="btn btn-info text-dark fw-bold">Enviar</button>
+                  </form>
+                </>
+              ) : (
+                <div className="d-flex align-items-center justify-content-center text-muted" style={{ minHeight: 560 }}>
+                  Selecione um pedido para responder ao cliente.
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -22,6 +22,7 @@ app.use('/api/ativos', require('./src/routes/ativos'));
 app.use('/api/conteudos', require('./src/routes/conteudos'));
 app.use('/api/artigos', require('./src/routes/artigos'));
 app.use('/api/contacto', require('./src/routes/contacto'));
+app.use('/api/pedidos', require('./src/routes/pedidos'));
 
 // Sincronização da Base de Dados PostgreSQL
 const PORT = process.env.PORT || 5000;

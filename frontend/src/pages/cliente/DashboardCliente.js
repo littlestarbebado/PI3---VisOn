@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
@@ -38,6 +39,20 @@ export default function DashboardCliente() {
       </p>
 
       <div className="row g-4">
+        <div className="col-12">
+          <div style={{ background: '#111827', borderRadius: '12px', padding: '1.2rem 1.4rem', border: '1px solid #1f2937', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <p style={{ color: '#93c5fd', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                Interacao com o Gestor
+              </p>
+              <h5 style={{ color: '#ffffff', fontWeight: 800, margin: 0 }}>Pedidos de esclarecimento</h5>
+            </div>
+            <Link to="/cliente/pedidos" className="btn btn-info text-dark fw-bold" style={{ borderRadius: '8px' }}>
+              Abrir Chat
+            </Link>
+          </div>
+        </div>
+
         {/* Card do Score de Risco */}
         <div className="col-md-4">
           <div style={{ background: '#ffffff', borderRadius: '16px', padding: '1.5rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>

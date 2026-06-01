@@ -30,6 +30,7 @@ import DetalhesCliente from './pages/gestor/DetalhesCliente';
 //Páginas do cliente
 import DashboardCliente from './pages/cliente/DashboardCliente';
 import SubmissoesCliente from './pages/cliente/SubmissoesCliente';
+import PedidosChat from './pages/cliente/PedidosChat';
 
 export default function App() {
   return (
@@ -76,6 +77,7 @@ export default function App() {
 <Route path="/cliente" element={<ProtectedRoute allowedRoles={['Cliente']} />}>
   <Route index element={<DashboardCliente />} />
   <Route path="submissoes" element={<SubmissoesCliente />} />
+  <Route path="pedidos" element={<PedidosChat />} />
 </Route>
           <Route
             path="/gestor/cliente/:id"

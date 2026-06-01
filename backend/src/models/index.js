@@ -19,12 +19,20 @@ const MensagemContacto = require('./MensagemContacto')(sequelize);
 const Cliente = require('./cliente')(sequelize);
 const AtivoTecnologico = require('./ativotecnologico')(sequelize);
 const Documento = require('./documento')(sequelize);
+const Pedido = require('./Pedido')(sequelize);
+const MensagemPedido = require('./MensagemPedido')(sequelize);
 
 Cliente.hasMany(AtivoTecnologico, { foreignKey: 'ClienteId', as: 'ativos' });
 AtivoTecnologico.belongsTo(Cliente, { foreignKey: 'ClienteId' });
 
 Cliente.hasMany(Documento, { foreignKey: 'ClienteId', as: 'documentos' });
 Documento.belongsTo(Cliente, { foreignKey: 'ClienteId' });
+
+Cliente.hasMany(Pedido, { foreignKey: 'ClienteId', as: 'pedidos' });
+Pedido.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
+
+Pedido.hasMany(MensagemPedido, { foreignKey: 'PedidoId', as: 'mensagens', onDelete: 'CASCADE' });
+MensagemPedido.belongsTo(Pedido, { foreignKey: 'PedidoId', as: 'pedido' });
 
 async function ensureDefaultAdmin() {
   try {
@@ -79,5 +87,7 @@ module.exports = {
   MensagemContacto,
   Cliente,
   AtivoTecnologico,
-  Documento
+  Documento,
+  Pedido,
+  MensagemPedido
 };
