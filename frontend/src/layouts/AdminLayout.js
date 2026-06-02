@@ -27,6 +27,11 @@ export default function AdminLayout() {
       path: '/admin/documentos'
     },
     {
+      name: 'Pedidos de Suporte',
+      icon: 'bi-chat-dots',
+      path: '/admin/suporte'
+    },
+    {
       name: 'Atividade',
       icon: 'bi-activity',
       path: '/admin/atividade'

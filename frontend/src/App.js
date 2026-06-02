@@ -22,6 +22,18 @@ import ArtigosAdmin from './pages/adm/ArtigosAdmin';
 import Utilizadores from './pages/adm/Utilizadores';
 import Documentos from './pages/adm/Documentos';
 import Atividade from './pages/adm/Atividade';
+import Empresa from './pages/adm/Empresa';
+import ServicosAdmin from './pages/adm/ServicosAdmin';
+import SuporteGeral from './pages/adm/SuporteGeral';
+
+// Páginas do gestor
+import DashboardGestor from './pages/gestor/dashboardGestor';
+import DetalhesCliente from './pages/gestor/DetalhesCliente';
+
+//Páginas do cliente
+import DashboardCliente from './pages/cliente/DashboardCliente';
+import SubmissoesCliente from './pages/cliente/SubmissoesCliente';
+import PedidosChat from './pages/cliente/PedidosChat';
 
 export default function App() {
   return (
@@ -37,43 +49,23 @@ export default function App() {
           <Route path="/contactos" element={<Contactos />} />
           <Route path="/login" element={<Login />} />
 
-          <Route path="/admin" element={<AdminLayout />}>
-
-            <Route
-              index
-              element={<Dashboard />}
-            />
-
-            <Route
-              path="empresa"
-              element={<Empresa />}
-            />
-
-            <Route
-              path="servicos-admin"
-              element={<ServicosAdmin />}
-            />
-
-            <Route
-              path="artigos-admin"
-              element={<ArtigosAdmin />}
-            />
-
-            <Route
-              path="utilizadores"
-              element={<Utilizadores />}
-            />
-
-            <Route
-              path="documentos"
-              element={<Documentos />}
-            />
-
-            <Route
-              path="atividade"
-              element={<Atividade />}
-            />
-
+          {/* Admin — AdminLayout usa <Outlet /> para renderizar as páginas filhas */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['Admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="artigos" element={<ArtigosAdmin />} />
+            <Route path="conteudos" element={<Empresa />} />
+            <Route path="servicos" element={<ServicosAdmin />} />
+            <Route path="utilizadores" element={<Utilizadores />} />
+            <Route path="documentos" element={<Documentos />} />
+            <Route path="atividade" element={<Atividade />} />
+            <Route path="suporte" element={<SuporteGeral />} />
           </Route>
 
         </Routes>
