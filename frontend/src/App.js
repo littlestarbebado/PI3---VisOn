@@ -22,6 +22,7 @@ import Documentos from './pages/adm/Documentos';
 import Atividade from './pages/adm/Atividade';
 import Empresa from './pages/adm/Empresa';
 import ServicosAdmin from './pages/adm/ServicosAdmin';
+import SuporteGeral from './pages/adm/SuporteGeral';
 
 // Páginas do gestor
 import DashboardGestor from './pages/gestor/dashboardGestor';
@@ -62,6 +63,7 @@ export default function App() {
             <Route path="utilizadores" element={<Utilizadores />} />
             <Route path="documentos" element={<Documentos />} />
             <Route path="atividade" element={<Atividade />} />
+            <Route path="suporte" element={<SuporteGeral />} />
           </Route>
 
           {/* Gestor */}
