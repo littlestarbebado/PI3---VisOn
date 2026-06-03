@@ -8,6 +8,12 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    },
     logging: false
   }
 );
@@ -21,6 +27,7 @@ const AtivoTecnologico = require('./ativotecnologico')(sequelize);
 const Documento = require('./documento')(sequelize);
 const Pedido = require('./Pedido')(sequelize);
 const MensagemPedido = require('./MensagemPedido')(sequelize);
+const Log = require('./Log')(sequelize);
 
 Cliente.hasMany(AtivoTecnologico, { foreignKey: 'ClienteId', as: 'ativos' });
 AtivoTecnologico.belongsTo(Cliente, { foreignKey: 'ClienteId' });
@@ -89,5 +96,6 @@ module.exports = {
   AtivoTecnologico,
   Documento,
   Pedido,
-  MensagemPedido
+  MensagemPedido,
+  Log
 };

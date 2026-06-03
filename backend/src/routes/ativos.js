@@ -4,6 +4,7 @@ const xlsx = require('xlsx');
 const { AtivoTecnologico, Cliente } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
+const { registrarLog } = require('../utils/logger');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -93,6 +94,11 @@ router.post('/importar', auth, requireRole(['Cliente']), validarUpload, async (r
     }
 
     const criados = await AtivoTecnologico.bulkCreate(ativos);
+    await registrarLog(
+      req.user?.email || cliente.email,
+      'Upload Excel',
+      `${criados.length} ativos importados`
+    );
 
     res.status(201).json({
       mensagem: `${criados.length} ativos importados com sucesso.`,

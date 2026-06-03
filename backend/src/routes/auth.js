@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { Admin, Cliente, Documento } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
+const { registrarLog } = require('../utils/logger');
 const SECRET = process.env.JWT_SECRET || 'vison_secret_2024';
 
 // POST /api/auth/login
@@ -13,12 +14,14 @@ router.post('/login', async (req, res) => {
     const admin = await Admin.findOne({ where: { email } });
     if (admin && (await bcrypt.compare(password, admin.password))) {
       const token = jwt.sign({ id: admin.id, email: admin.email, role: admin.role }, SECRET, { expiresIn: '8h' });
+      await registrarLog(admin.email, 'Login', `${admin.email} iniciou sessao como ${admin.role}`);
       return res.json({ token, admin: { id: admin.id, nome: admin.nome, email: admin.email, role: admin.role } });
     }
 
     const cliente = await Cliente.findOne({ where: { email } });
     if (cliente && (await bcrypt.compare(password, cliente.password))) {
       const token = jwt.sign({ id: cliente.id, email: cliente.email, role: 'Cliente' }, SECRET, { expiresIn: '8h' });
+      await registrarLog(cliente.email, 'Login', `${cliente.email} iniciou sessao como Cliente`);
       return res.json({
         token,
         cliente: { id: cliente.id, nome: cliente.nome, email: cliente.email, role: 'Cliente' }

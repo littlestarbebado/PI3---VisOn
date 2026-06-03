@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
+import socket from '../../services/socket';
 
 const estados = {
   Pendente: 'bg-danger',
@@ -25,6 +26,22 @@ export default function PedidosChat() {
     [pedidos, pedidoAtivoId]
   );
 
+  const adicionarMensagemPedido = useCallback((pedidoId, novaMensagem) => {
+    setPedidos(prev => prev.map(pedido => {
+      if (Number(pedido.id) !== Number(pedidoId)) return pedido;
+
+      const mensagens = pedido.mensagens || [];
+      const jaExiste = mensagens.some(msg => Number(msg.id) === Number(novaMensagem.id));
+      if (jaExiste) return pedido;
+
+      return {
+        ...pedido,
+        updatedAt: novaMensagem.updatedAt || new Date().toISOString(),
+        mensagens: [...mensagens, novaMensagem]
+      };
+    }));
+  }, []);
+
   const carregarPedidos = () => {
     setLoading(true);
     api.get('/pedidos')
@@ -43,6 +60,23 @@ export default function PedidosChat() {
   useEffect(() => {
     if (!pedidoAtivoId && pedidos.length > 0) setPedidoAtivoId(pedidos[0].id);
   }, [pedidoAtivoId, pedidos]);
+
+  useEffect(() => {
+    if (!pedidoAtivo?.id) return undefined;
+
+    socket.emit('join_pedido', pedidoAtivo.id);
+
+    const receberMensagem = (novaMensagem) => {
+      adicionarMensagemPedido(novaMensagem.PedidoId || pedidoAtivo.id, novaMensagem);
+    };
+
+    socket.on('receber_mensagem', receberMensagem);
+
+    return () => {
+      socket.off('receber_mensagem', receberMensagem);
+      socket.emit('leave_pedido', pedidoAtivo.id);
+    };
+  }, [adicionarMensagemPedido, pedidoAtivo?.id]);
 
   const abrirPedido = async (event) => {
     event.preventDefault();
@@ -70,11 +104,7 @@ export default function PedidosChat() {
 
     try {
       const { data } = await api.post(`/pedidos/${pedidoAtivo.id}/mensagens`, { texto: mensagem });
-      setPedidos(prev => prev.map(pedido => (
-        pedido.id === pedidoAtivo.id
-          ? { ...pedido, mensagens: [...(pedido.mensagens || []), data] }
-          : pedido
-      )));
+      adicionarMensagemPedido(pedidoAtivo.id, data);
       setMensagem('');
     } catch (error) {
       setErro(error.response?.data?.erro || 'Erro ao enviar mensagem.');

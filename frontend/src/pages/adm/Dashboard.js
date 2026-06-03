@@ -23,32 +23,17 @@ const quickActions = [
   { label: 'Abrir Suporte / Chat', icon: 'bi-chat-dots' }
 ];
 
-const recentActivities = [
-  {
-    author: 'Gestor Silva',
-    action: 'Upload de Documento',
-    description: "Carregou 'Relatório de Avaliação de Risco' para TechCorp",
-    date: 'Hoje, 10:42'
-  },
-  {
-    author: 'Admin Marta',
-    action: 'Criação de Utilizador',
-    description: 'Criou o acesso do gestor operacional para a área administrativa',
-    date: 'Hoje, 09:18'
-  },
-  {
-    author: 'Gestor Ramos',
-    action: 'Atualização de Cliente',
-    description: 'Atualizou os dados de contacto e o estado do cliente BlueWave',
-    date: 'Ontem, 17:05'
-  },
-  {
-    author: 'Sistema VisOn',
-    action: 'Sincronização',
-    description: 'Validou documentos recentes e recalculou indicadores do dashboard',
-    date: 'Ontem, 14:30'
-  }
-];
+function formatarData(valor) {
+  if (!valor) return '';
+
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) return valor;
+
+  return new Intl.DateTimeFormat('pt-PT', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(data);
+}
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -58,6 +43,7 @@ export default function Dashboard() {
     atividade: 0,
     clientesRecentes: []
   });
+  const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,6 +61,13 @@ export default function Dashboard() {
       .catch(err => {
         console.error('Erro ao carregar estatísticas:', err);
         setLoading(false);
+      });
+
+    api.get('/logs')
+      .then(res => setRecentActivities(res.data || []))
+      .catch(err => {
+        console.error('Erro ao carregar logs:', err);
+        setRecentActivities([]);
       });
   }, []);
 
@@ -227,9 +220,9 @@ export default function Dashboard() {
           <div style={{ ...cardStyle, padding: '1.5rem' }}>
             <h3 style={sectionTitleStyle}>Atividade Recente</h3>
             <div className="d-flex flex-column">
-              {recentActivities.map((activity, index) => (
+              {recentActivities.length > 0 ? recentActivities.map((activity, index) => (
                 <div
-                  key={`${activity.author}-${activity.action}`}
+                  key={activity.id || `${activity.utilizador}-${activity.acao}-${activity.createdAt}`}
                   className="d-flex align-items-start gap-3"
                   style={{
                     padding: index === 0 ? '0 0 1.15rem' : '1.15rem 0',
@@ -250,19 +243,21 @@ export default function Dashboard() {
                   <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 w-100">
                     <div>
                       <p style={{ color: '#111827', fontWeight: 800, marginBottom: '0.25rem' }}>
-                        {activity.author}
-                        <span style={{ color: '#4b5563', fontWeight: 700 }}> · {activity.action}</span>
+                        {activity.utilizador}
+                        <span style={{ color: '#4b5563', fontWeight: 700 }}> · {activity.acao}</span>
                       </p>
                       <p style={{ color: '#4b5563', margin: 0, fontSize: '0.93rem' }}>
-                        {activity.description}
+                        {activity.detalhes}
                       </p>
                     </div>
                     <span style={{ color: '#9ca3af', fontSize: '0.88rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                      {activity.date}
+                      {formatarData(activity.createdAt)}
                     </span>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <p style={{ color: '#4b5563', margin: 0 }}>Ainda nao existem logs de atividade para apresentar.</p>
+              )}
             </div>
           </div>
         </div>
