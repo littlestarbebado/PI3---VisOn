@@ -44,6 +44,7 @@ app.use('/api/conteudos', require('./src/routes/conteudos'));
 app.use('/api/artigos', require('./src/routes/artigos'));
 app.use('/api/contacto', require('./src/routes/contacto'));
 app.use('/api/pedidos', require('./src/routes/pedidos'));
+app.use('/api/incidentes', require('./src/routes/incidentes'));
 app.use('/api/logs', require('./src/routes/logs'));
 
 // Sincronização da Base de Dados PostgreSQL

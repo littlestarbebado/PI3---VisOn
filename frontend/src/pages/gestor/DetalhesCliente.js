@@ -10,6 +10,8 @@ const DetalhesCliente = () => {
   const [ativos, setAtivos] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [pedidos, setPedidos] = useState([]);
+  const [incidentes, setIncidentes] = useState([]);
+  const [incidenteAtivoId, setIncidenteAtivoId] = useState(null);
   const [pedidoAtivoId, setPedidoAtivoId] = useState(null);
   const [mensagemPedido, setMensagemPedido] = useState('');
   const [loading, setLoading] = useState(true);
@@ -52,18 +54,43 @@ const DetalhesCliente = () => {
       });
   }, [id]);
 
+  const carregarIncidentes = useCallback(() => {
+    api.get(`/incidentes?clienteId=${id}`)
+      .then(response => {
+        const lista = response.data || [];
+        setIncidentes(lista);
+        setIncidenteAtivoId(prev => (
+          lista.some(incidente => incidente.id === prev) ? prev : lista[0]?.id || null
+        ));
+      })
+      .catch(error => {
+        console.error('Erro ao carregar incidentes:', error);
+      });
+  }, [id]);
+
   useEffect(() => {
     carregarDetalhes();
     carregarPedidos();
-  }, [carregarDetalhes, carregarPedidos]);
+    carregarIncidentes();
+  }, [carregarDetalhes, carregarPedidos, carregarIncidentes]);
 
   const pedidoAtivo = pedidos.find(pedido => pedido.id === pedidoAtivoId) || pedidos[0];
+  const incidenteAtivo = incidentes.find(incidente => incidente.id === incidenteAtivoId) || incidentes[0];
 
   const estadoBadgeClass = (estado) => {
     if (estado === 'Pendente') return 'bg-danger';
+    if (estado === 'Em Analise') return 'bg-primary';
+    if (estado === 'Resolvido') return 'bg-success';
     if (estado === 'Em Análise') return 'bg-primary';
     if (estado === 'Concluído') return 'bg-success';
     return 'bg-secondary';
+  };
+
+  const formatarData = (valor) => {
+    if (!valor) return 'Sem data';
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return 'Sem data';
+    return data.toLocaleString('pt-PT');
   };
 
   const responderPedido = (event) => {
@@ -95,6 +122,20 @@ const DetalhesCliente = () => {
       })
       .catch(error => {
         setErro(error.response?.data?.erro || 'Nao foi possivel alterar o estado do pedido.');
+      });
+  };
+
+  const alterarEstadoIncidente = (estado) => {
+    if (!incidenteAtivo) return;
+
+    api.put(`/incidentes/${incidenteAtivo.id}/estado`, { estado })
+      .then(response => {
+        setIncidentes(prev => prev.map(incidente => (
+          incidente.id === incidenteAtivo.id ? { ...incidente, estado: response.data.estado } : incidente
+        )));
+      })
+      .catch(error => {
+        setErro(error.response?.data?.erro || 'Nao foi possivel alterar o estado do incidente.');
       });
   };
 
@@ -163,6 +204,14 @@ const DetalhesCliente = () => {
             onClick={() => setAbaAtiva('documentos')}
           >
             Documentacao Tecnica ({documentos.length})
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link text-white border-0 ${abaAtiva === 'incidentes' ? 'active bg-secondary fw-bold' : ''}`}
+            onClick={() => setAbaAtiva('incidentes')}
+          >
+            Incidentes ({incidentes.length})
           </button>
         </li>
         <li className="nav-item">
@@ -317,6 +366,88 @@ const DetalhesCliente = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {abaAtiva === 'incidentes' && (
+        <div className="row g-4">
+          <div className="col-lg-5">
+            <div className="card bg-dark border-secondary">
+              <div className="card-header border-secondary text-info fw-bold">
+                Incidentes reportados
+              </div>
+              <div className="list-group list-group-flush">
+                {incidentes.length === 0 ? (
+                  <div className="p-3 text-muted">Este cliente ainda nao submeteu incidentes.</div>
+                ) : incidentes.map(incidente => (
+                  <button
+                    key={incidente.id}
+                    type="button"
+                    className={`list-group-item list-group-item-action border-secondary text-start ${incidenteAtivo?.id === incidente.id ? 'bg-secondary text-white' : 'bg-dark text-white'}`}
+                    onClick={() => setIncidenteAtivoId(incidente.id)}
+                  >
+                    <div className="d-flex justify-content-between align-items-center gap-2">
+                      <span className="fw-semibold">{incidente.tipo}</span>
+                      <span className={`badge ${estadoBadgeClass(incidente.estado)}`}>{incidente.estado}</span>
+                    </div>
+                    <small className="text-white-50">
+                      {incidente.impacto} | {formatarData(incidente.dataOcorrencia)}
+                    </small>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="col-lg-7">
+            <div className="card bg-dark border-secondary" style={{ minHeight: 520 }}>
+              {incidenteAtivo ? (
+                <>
+                  <div className="card-header border-secondary">
+                    <div className="d-flex justify-content-between align-items-start gap-3">
+                      <div>
+                        <div className="text-info small fw-bold mb-1">Relatorio CNCS #{incidenteAtivo.id}</div>
+                        <h5 className="mb-1">{incidenteAtivo.tipo}</h5>
+                        <p className="text-muted small mb-0">
+                          Impacto {incidenteAtivo.impacto} | Ocorrencia: {formatarData(incidenteAtivo.dataOcorrencia)}
+                        </p>
+                      </div>
+                      <select
+                        className="form-select form-select-sm bg-secondary text-white border-0"
+                        style={{ maxWidth: 180 }}
+                        value={incidenteAtivo.estado}
+                        onChange={event => alterarEstadoIncidente(event.target.value)}
+                      >
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em Analise">Em Analise</option>
+                        <option value="Resolvido">Resolvido</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="card-body" style={{ background: '#101522' }}>
+                    <div className="mb-4">
+                      <div className="text-info small fw-bold mb-2">Descricao do incidente</div>
+                      <div className="p-3 rounded-3 bg-dark border border-secondary text-white">
+                        {incidenteAtivo.descricao}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-info small fw-bold mb-2">Acoes imediatas comunicadas</div>
+                      <div className="p-3 rounded-3 bg-dark border border-secondary text-white">
+                        {incidenteAtivo.acoesImediatas || 'Sem acoes imediatas comunicadas.'}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="d-flex align-items-center justify-content-center text-muted" style={{ minHeight: 500 }}>
+                  Selecione um incidente para ver o relatorio completo.
+                </div>
+              )}
             </div>
           </div>
         </div>
