@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { Pedido, MensagemPedido, Cliente } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
+const { registrarLog } = require('../utils/logger');
 
 const ESTADOS = ['Pendente', 'Em Análise', 'Concluído'];
 
@@ -120,6 +121,7 @@ router.post('/:id/mensagens', auth, requireRole(['Cliente', 'Gestor', 'Admin']),
     });
 
     await pedido.update({ updatedAt: new Date() });
+    req.app.get('io')?.to(`pedido_${pedido.id}`).emit('receber_mensagem', mensagem);
     res.status(201).json(mensagem);
   } catch (error) {
     console.error('Erro ao enviar mensagem:', error);
@@ -139,6 +141,11 @@ router.put('/:id/estado', auth, requireRole(['Gestor', 'Admin']), async (req, re
     if (!pedido) return res.status(404).json({ erro: 'Pedido nao encontrado.' });
 
     await pedido.update({ estado });
+    await registrarLog(
+      req.user?.email || req.admin?.email,
+      'Alteracao de Estado',
+      `Pedido #${pedido.id} movido para ${estado}`
+    );
     res.json(pedido);
   } catch (error) {
     console.error('Erro ao atualizar estado do pedido:', error);
