@@ -22,15 +22,14 @@ import ArtigosAdmin from './pages/adm/ArtigosAdmin';
 import Utilizadores from './pages/adm/Utilizadores';
 import Documentos from './pages/adm/Documentos';
 import Atividade from './pages/adm/Atividade';
-import Empresa from './pages/adm/Empresa';
-import ServicosAdmin from './pages/adm/ServicosAdmin';
 import SuporteGeral from './pages/adm/SuporteGeral';
+import Conteudos from './pages/adm/Conteudos';
 
-// Páginas do gestor
+/* GESTOR */
 import DashboardGestor from './pages/gestor/dashboardGestor';
 import DetalhesCliente from './pages/gestor/DetalhesCliente';
 
-//Páginas do cliente
+/* CLIENTE */
 import DashboardCliente from './pages/cliente/DashboardCliente';
 import SubmissoesCliente from './pages/cliente/SubmissoesCliente';
 import PedidosChat from './pages/cliente/PedidosChat';
@@ -42,6 +41,7 @@ export default function App() {
 
         <Routes>
 
+          {/* PÚBLICO */}
           <Route path="/" element={<Home />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/servicos" element={<Servicos />} />
@@ -49,24 +49,26 @@ export default function App() {
           <Route path="/contactos" element={<Contactos />} />
           <Route path="/login" element={<Login />} />
 
-          {/* Admin — AdminLayout usa <Outlet /> para renderizar as páginas filhas */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute allowedRoles={['Admin']}>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
+          {/* ADMIN */}
+          <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="artigos" element={<ArtigosAdmin />} />
-            <Route path="conteudos" element={<Empresa />} />
+            <Route path="conteudos" element={<Conteudos />} />
             <Route path="servicos" element={<ServicosAdmin />} />
             <Route path="utilizadores" element={<Utilizadores />} />
             <Route path="documentos" element={<Documentos />} />
             <Route path="atividade" element={<Atividade />} />
             <Route path="suporte" element={<SuporteGeral />} />
           </Route>
+
+          {/* GESTOR */}
+          <Route path="/gestor" element={<DashboardGestor />} />
+          <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
+
+          {/* CLIENTE */}
+          <Route path="/cliente" element={<DashboardCliente />} />
+          <Route path="/cliente/submissoes" element={<SubmissoesCliente />} />
+          <Route path="/cliente/chat" element={<PedidosChat />} />
 
         </Routes>
 
