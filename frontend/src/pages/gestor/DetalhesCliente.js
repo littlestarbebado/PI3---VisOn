@@ -2,6 +2,27 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+
+const ESTADOS_NIS2 = [
+  ['Nao Iniciado', 'Não Iniciado'],
+  ['Em Analise', 'Em Análise'],
+  ['Conforme', 'Conforme'],
+  ['Nao Conforme', 'Não Conforme']
+];
+
+function classificarRisco(score) {
+  if (score <= 30) return { nivel: 'Alto', cor: 'text-danger' };
+  if (score <= 70) return { nivel: 'Médio', cor: 'text-warning' };
+  return { nivel: 'Baixo', cor: 'text-success' };
+}
+
+function categoriaDocumento(categoria) {
+  if (categoria === 'Evidencia') return 'Evidência';
+  if (categoria === 'Documentacao') return 'Documentação';
+  return categoria || 'Documento';
+}
+
 const DetalhesCliente = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -20,10 +41,18 @@ const DetalhesCliente = () => {
 
   const [nomeDoc, setNomeDoc] = useState('');
   const [descDoc, setDescDoc] = useState('');
+  const [categoriaDoc, setCategoriaDoc] = useState('Documentacao');
   const [ficheiro, setFicheiro] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadErro, setUploadErro] = useState(null);
   const [uploadSucesso, setUploadSucesso] = useState(false);
+  const [nis2, setNis2] = useState({
+    estado: 'Nao Iniciado',
+    percentagem: 0,
+    observacoes: '',
+    evidenciasIds: []
+  });
+  const [nis2Feedback, setNis2Feedback] = useState('');
 
   const carregarDetalhes = useCallback(() => {
     api.get(`/clientes/${id}`)
@@ -68,11 +97,28 @@ const DetalhesCliente = () => {
       });
   }, [id]);
 
+  const carregarNIS2 = useCallback(() => {
+    api.get(`/nis2?clienteId=${id}`)
+      .then(response => {
+        const avaliacao = response.data.avaliacao;
+        setNis2(avaliacao ? {
+          estado: avaliacao.estado,
+          percentagem: avaliacao.percentagem,
+          observacoes: avaliacao.observacoes || '',
+          evidenciasIds: avaliacao.evidenciasIds || []
+        } : {
+          estado: 'Nao Iniciado', percentagem: 0, observacoes: '', evidenciasIds: []
+        });
+      })
+      .catch(() => setErro('Nao foi possivel carregar a avaliacao NIS2.'));
+  }, [id]);
+
   useEffect(() => {
     carregarDetalhes();
     carregarPedidos();
     carregarIncidentes();
-  }, [carregarDetalhes, carregarPedidos, carregarIncidentes]);
+    carregarNIS2();
+  }, [carregarDetalhes, carregarPedidos, carregarIncidentes, carregarNIS2]);
 
   const pedidoAtivo = pedidos.find(pedido => pedido.id === pedidoAtivoId) || pedidos[0];
   const incidenteAtivo = incidentes.find(incidente => incidente.id === incidenteAtivoId) || incidentes[0];
@@ -139,6 +185,39 @@ const DetalhesCliente = () => {
       });
   };
 
+  const alterarEstadoDocumento = (documentoId, estado) => {
+    api.put(`/documentos/${documentoId}/estado`, { estado })
+      .then(response => {
+        setDocumentos(prev => prev.map(doc => (
+          doc.id === documentoId ? { ...doc, estado: response.data.estado } : doc
+        )));
+      })
+      .catch(error => {
+        setErro(error.response?.data?.erro || 'Nao foi possivel alterar o estado da submissao.');
+      });
+  };
+
+  const guardarNIS2 = () => {
+    setNis2Feedback('');
+    api.put(`/nis2/${id}`, nis2)
+      .then(response => {
+        setNis2(response.data.avaliacao);
+        setNis2Feedback('Avaliação NIS2 guardada.');
+      })
+      .catch(error => {
+        setErro(error.response?.data?.erro || 'Nao foi possivel guardar a avaliacao NIS2.');
+      });
+  };
+
+  const alternarEvidenciaNIS2 = (documentoId) => {
+    setNis2(prev => ({
+      ...prev,
+      evidenciasIds: prev.evidenciasIds.includes(documentoId)
+        ? prev.evidenciasIds.filter(idDocumento => idDocumento !== documentoId)
+        : [...prev.evidenciasIds, documentoId]
+    }));
+  };
+
   const handleUpload = () => {
     setUploadErro(null);
     setUploadSucesso(false);
@@ -154,6 +233,7 @@ const DetalhesCliente = () => {
     formData.append('ficheiro', ficheiro);
     formData.append('nome', nomeDoc);
     formData.append('descricao', descDoc);
+    formData.append('categoria', categoriaDoc);
     formData.append('ClienteId', id);
 
     api.post('/documentos', formData, {
@@ -163,6 +243,7 @@ const DetalhesCliente = () => {
         setUploadSucesso(true);
         setNomeDoc('');
         setDescDoc('');
+        setCategoriaDoc('Documentacao');
         setFicheiro(null);
         carregarDetalhes();
       })
@@ -176,6 +257,8 @@ const DetalhesCliente = () => {
   if (erro) return <div className="alert alert-danger m-5 text-center">{erro}</div>;
   if (!cliente) return <div className="alert alert-warning m-5 text-center">Cliente nao encontrado.</div>;
 
+  const risco = classificarRisco(cliente.score ?? 0);
+
   return (
     <div className="container-fluid min-vh-100 p-4 text-white" style={{ backgroundColor: '#0a0c14' }}>
       <button onClick={() => navigate('/gestor')} className="btn btn-outline-light btn-sm mb-4">
@@ -187,6 +270,10 @@ const DetalhesCliente = () => {
         <p className="text-muted">
           Responsavel: <strong className="text-white">{cliente.respSegurancaNome || 'Nao definido'}</strong> |{' '}
           Email: <strong className="text-white">{cliente.email || 'Sem contacto'}</strong>
+        </p>
+        <p className="mb-0">
+          Score de segurança: <strong>{cliente.score ?? 0}/100</strong> ·{' '}
+          Risco: <strong className={risco.cor}>{risco.nivel}</strong>
         </p>
       </div>
 
@@ -205,6 +292,14 @@ const DetalhesCliente = () => {
             onClick={() => setAbaAtiva('documentos')}
           >
             Documentacao Tecnica ({documentos.length})
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link text-white border-0 ${abaAtiva === 'nis2' ? 'active bg-secondary fw-bold' : ''}`}
+            onClick={() => setAbaAtiva('nis2')}
+          >
+            NIS2
           </button>
         </li>
         <li className="nav-item">
@@ -273,7 +368,20 @@ const DetalhesCliente = () => {
               Upload de Novo Relatorio / Documento
             </div>
             <div className="card-body row g-2">
-              <div className="col-md-3">
+              <div className="col-md-2">
+                <select
+                  className="form-select form-select-sm bg-secondary text-white border-0"
+                  value={categoriaDoc}
+                  onChange={e => setCategoriaDoc(e.target.value)}
+                >
+                  <option value="Evidencia">Evidência</option>
+                  <option value="Pen Test">Pen Test</option>
+                  <option value="Documentacao">Documentação</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+
+              <div className="col-md-2">
                 <input
                   type="text"
                   className="form-control form-control-sm bg-secondary text-white border-0"
@@ -283,7 +391,7 @@ const DetalhesCliente = () => {
                 />
               </div>
 
-              <div className="col-md-4">
+              <div className="col-md-3">
                 <input
                   type="text"
                   className="form-control form-control-sm bg-secondary text-white border-0"
@@ -333,15 +441,17 @@ const DetalhesCliente = () => {
                   <thead>
                     <tr className="text-secondary border-secondary">
                       <th className="ps-4">Nome do Documento</th>
+                      <th>Categoria</th>
                       <th>Tipo</th>
                       <th>Descricao</th>
+                      <th>Estado</th>
                       <th className="text-end pe-4">Acoes</th>
                     </tr>
                   </thead>
                   <tbody>
                     {documentos.length === 0 ? (
                       <tr>
-                        <td colSpan="4" className="text-center py-4 text-muted">
+                        <td colSpan="6" className="text-center py-4 text-muted">
                           Nenhum PDF ou relatorio associado a este cliente.
                         </td>
                       </tr>
@@ -349,11 +459,27 @@ const DetalhesCliente = () => {
                       documentos.map(doc => (
                         <tr key={doc.id} className="border-secondary">
                           <td className="ps-4 fw-semibold">{doc.nome}</td>
+                          <td><span className="badge bg-info text-dark">{categoriaDocumento(doc.categoria)}</span></td>
                           <td><span className="badge bg-danger text-white">{doc.tipo || 'PDF'}</span></td>
                           <td className="text-muted">{doc.descricao || 'Sem descricao fornecida.'}</td>
+                          <td>
+                            {['Evidencia', 'Pen Test', 'Documentacao', 'Outros'].includes(doc.categoria) ? (
+                              <select
+                                className="form-select form-select-sm bg-secondary text-white border-0"
+                                value={doc.estado || 'Pendente'}
+                                onChange={event => alterarEstadoDocumento(doc.id, event.target.value)}
+                              >
+                                <option value="Pendente">Pendente</option>
+                                <option value="Em Analise">Em Análise</option>
+                                <option value="Concluido">Concluído</option>
+                              </select>
+                            ) : (
+                              <span className="badge bg-success">{doc.estado || 'Concluido'}</span>
+                            )}
+                          </td>
                           <td className="text-end pe-4">
                             <a
-                              href={`http://localhost:5000/${doc.caminho}`}
+                              href={`${BACKEND_URL}${doc.caminho}`}
                               target="_blank"
                               rel="noreferrer"
                               className="btn btn-sm btn-info text-dark fw-bold"
@@ -367,6 +493,74 @@ const DetalhesCliente = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {abaAtiva === 'nis2' && (
+        <div className="card bg-dark border-secondary">
+          <div className="card-header border-secondary text-info fw-bold">
+            Avaliação de Conformidade NIS2
+          </div>
+          <div className="card-body row g-4">
+            <div className="col-md-6">
+              <label className="form-label text-white-50">Estado</label>
+              <select
+                className="form-select bg-secondary text-white border-0"
+                value={nis2.estado}
+                onChange={event => setNis2(prev => ({ ...prev, estado: event.target.value }))}
+              >
+                {ESTADOS_NIS2.map(([valor, label]) => <option key={valor} value={valor}>{label}</option>)}
+              </select>
+            </div>
+            <div className="col-md-6">
+              <label className="form-label text-white-50">Percentagem de conformidade</label>
+              <div className="input-group">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="form-control bg-secondary text-white border-0"
+                  value={nis2.percentagem}
+                  onChange={event => setNis2(prev => ({ ...prev, percentagem: Number(event.target.value) }))}
+                />
+                <span className="input-group-text">%</span>
+              </div>
+            </div>
+            <div className="col-12">
+              <label className="form-label text-white-50">Observações</label>
+              <textarea
+                rows="4"
+                className="form-control bg-secondary text-white border-0"
+                value={nis2.observacoes}
+                onChange={event => setNis2(prev => ({ ...prev, observacoes: event.target.value }))}
+              />
+            </div>
+            <div className="col-12">
+              <label className="form-label text-white-50 d-block">Evidências associadas</label>
+              <div className="border border-secondary rounded p-3">
+                {documentos.filter(doc => ['Evidencia', 'Pen Test', 'Documentacao', 'Outros'].includes(doc.categoria)).length === 0 ? (
+                  <span className="text-white-50">Não existem documentos elegíveis.</span>
+                ) : documentos
+                  .filter(doc => ['Evidencia', 'Pen Test', 'Documentacao', 'Outros'].includes(doc.categoria))
+                  .map(doc => (
+                    <label key={doc.id} className="d-flex align-items-center gap-2 mb-2">
+                      <input
+                        type="checkbox"
+                        checked={nis2.evidenciasIds.includes(doc.id)}
+                        onChange={() => alternarEvidenciaNIS2(doc.id)}
+                      />
+                      <span>{doc.nome} <small className="text-info">({categoriaDocumento(doc.categoria)})</small></span>
+                    </label>
+                  ))}
+              </div>
+            </div>
+            {nis2Feedback && <div className="col-12"><div className="alert alert-success mb-0">{nis2Feedback}</div></div>}
+            <div className="col-12">
+              <button className="btn btn-info text-dark fw-bold" onClick={guardarNIS2}>
+                Guardar Avaliação NIS2
+              </button>
             </div>
           </div>
         </div>

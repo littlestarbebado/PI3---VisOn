@@ -42,6 +42,7 @@ export default function Dashboard() {
     clientes: 0,
     utilizadores: 0,
     documentos: 0,
+    nis2Avaliacoes: 0,
     atividade: 0,
     clientesRecentes: []
   });
@@ -55,6 +56,7 @@ export default function Dashboard() {
           clientes: res.data.clientes || 0,
           utilizadores: res.data.utilizadores || 0,
           documentos: res.data.documentos || 0,
+          nis2Avaliacoes: res.data.nis2Avaliacoes || 0,
           atividade: res.data.atividadeHoje ?? res.data.atividade ?? 0,
           clientesRecentes: res.data.clientesRecentes || []
         });
@@ -94,6 +96,13 @@ export default function Dashboard() {
       icon: 'bi-file-earmark-text',
       color: '#dc2626',
       bgIcon: '#fef2f2'
+    },
+    {
+      title: 'Avaliações NIS2',
+      value: data.nis2Avaliacoes,
+      icon: 'bi-clipboard2-check',
+      color: '#7c3aed',
+      bgIcon: '#f5f3ff'
     },
     {
       title: 'Atividade (Hoje)',

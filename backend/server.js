@@ -9,11 +9,14 @@ const { sequelize, ensureDefaultAdmin, ensureDemoUsers } = require('./src/models
 
 const app = express();
 const server = http.createServer(app);
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const corsOptions = {
+  origin: FRONTEND_URL,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
 const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-  }
+  cors: corsOptions
 });
 
 app.set('io', io);
@@ -29,7 +32,7 @@ io.on('connection', (socket) => {
 });
 
 // Middlewares essenciais para ler dados de formulários (JSON)
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -47,6 +50,7 @@ app.use('/api/pedidos', require('./src/routes/pedidos'));
 app.use('/api/incidentes', require('./src/routes/incidentes'));
 app.use('/api/logs', require('./src/routes/logs'));
 app.use('/api/documentos', require('./src/routes/documentos'));
+app.use('/api/nis2', require('./src/routes/nis2'));
 
 // Sincronização da Base de Dados PostgreSQL
 const PORT = process.env.PORT || 5000;

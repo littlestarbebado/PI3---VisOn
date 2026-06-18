@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import api from '../../services/api';
 import CarregarDocumentoModal from './CarregarDocumentoModal';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+
 export default function Documentos() {
   const [showModal, setShowModal] = useState(false);
   const [documentos, setDocumentos] = useState([]);
@@ -49,7 +51,7 @@ export default function Documentos() {
             <div key={doc.id} className="list-group-item d-flex justify-content-between align-items-center gap-3">
               <div><div className="fw-bold">{doc.nome}</div><small className="text-muted">{doc.cliente?.nome || 'Sem cliente'} · {doc.tipo || 'Ficheiro'} · {new Date(doc.createdAt).toLocaleDateString('pt-PT')}</small></div>
               <div className="d-flex gap-2">
-                {doc.caminho && <a className="btn btn-sm btn-outline-primary" href={`http://localhost:5000${doc.caminho}`} target="_blank" rel="noreferrer">Descarregar</a>}
+                {doc.caminho && <a className="btn btn-sm btn-outline-primary" href={`${BACKEND_URL}${doc.caminho}`} target="_blank" rel="noreferrer">Descarregar</a>}
                 <button className="btn btn-sm btn-outline-danger" onClick={() => eliminar(doc.id)}>Eliminar</button>
               </div>
             </div>

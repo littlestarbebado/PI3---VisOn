@@ -7,6 +7,9 @@ const auth = require('../middlewares/auth');
 const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
 
+const CATEGORIAS_CLIENTE = ['Evidencia', 'Pen Test', 'Documentacao', 'Outros'];
+const ESTADOS_SUBMISSAO = ['Pendente', 'Em Analise', 'Concluido'];
+
 // Configuração de upload
 const uploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -45,10 +48,40 @@ router.get('/', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
+// POST /api/documentos/submeter — Cliente submete evidencia ou pen test
+router.post('/submeter', auth, requireRole(['Cliente']), upload.single('ficheiro'), async (req, res) => {
+  try {
+    const { nome, descricao, categoria } = req.body;
+
+    if (!req.file) return res.status(400).json({ erro: 'Ficheiro obrigatorio.' });
+    if (!CATEGORIAS_CLIENTE.includes(categoria)) {
+      return res.status(400).json({ erro: 'Categoria de submissao invalida.' });
+    }
+
+    const doc = await Documento.create({
+      nome: nome || req.file.originalname,
+      tipo: path.extname(req.file.originalname).replace('.', '').toUpperCase(),
+      caminho: `/uploads/${req.file.filename}`,
+      descricao,
+      categoria,
+      estado: 'Pendente',
+      ClienteId: req.user.id
+    });
+
+    await registrarLog(
+      req.user.email,
+      'Submeter Documento',
+      `${categoria} submetida: "${doc.nome}"`
+    );
+
+    res.status(201).json(doc);
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+
 // POST /api/documentos — Admin/Gestor: carrega documento para um cliente
 router.post('/', auth, requireRole(['Admin', 'Gestor']), upload.single('ficheiro'), async (req, res) => {
   try {
-    const { nome, descricao, ClienteId } = req.body;
+    const { nome, descricao, ClienteId, categoria } = req.body;
     if (!ClienteId) return res.status(400).json({ erro: 'ClienteId e obrigatorio.' });
 
     const doc = await Documento.create({
@@ -56,6 +89,8 @@ router.post('/', auth, requireRole(['Admin', 'Gestor']), upload.single('ficheiro
       tipo: req.file ? path.extname(req.file.originalname).replace('.', '').toUpperCase() : null,
       caminho: req.file ? `/uploads/${req.file.filename}` : null,
       descricao,
+      categoria: categoria || 'Documento',
+      estado: 'Concluido',
       ClienteId
     });
 
@@ -63,6 +98,23 @@ router.post('/', auth, requireRole(['Admin', 'Gestor']), upload.single('ficheiro
     await registrarLog(req.user.email, 'Criar Documento', `Documento "${doc.nome}" carregado para cliente ${cliente?.email || ClienteId}`);
 
     res.status(201).json(doc);
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+
+// PUT /api/documentos/:id/estado — Gestor/Admin atualiza workflow da submissao
+router.put('/:id/estado', auth, requireRole(['Admin', 'Gestor']), async (req, res) => {
+  try {
+    const { estado } = req.body;
+    if (!ESTADOS_SUBMISSAO.includes(estado)) {
+      return res.status(400).json({ erro: 'Estado invalido.' });
+    }
+
+    const doc = await Documento.findByPk(req.params.id);
+    if (!doc) return res.status(404).json({ erro: 'Documento nao encontrado.' });
+
+    await doc.update({ estado });
+    await registrarLog(req.user.email, 'Alterar Estado Documento', `Documento #${doc.id} movido para ${estado}`);
+    res.json(doc);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 

@@ -2,12 +2,14 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
-const { Admin, Cliente, Documento, Log } = require('../models');
+const { Admin, Cliente, Documento, Log, NIS2Assessment } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'vison_secret_2024';
+const JWT_SECRET = process.env.JWT_SECRET
+  || (process.env.NODE_ENV === 'production' ? null : 'vison_secret_2024');
+if (!JWT_SECRET) throw new Error('JWT_SECRET e obrigatorio em producao.');
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
 
 function utilizadorPublico(utilizador, role) {
@@ -178,11 +180,12 @@ router.get('/stats', auth, requireRole(['Admin']), async (req, res) => {
     const inicioAmanha = new Date(inicioHoje);
     inicioAmanha.setDate(inicioAmanha.getDate() + 1);
 
-    const [clientes, adminsEGestores, documentos, atividadeHoje, clientesRecentes] =
+    const [clientes, adminsEGestores, documentos, nis2Avaliacoes, atividadeHoje, clientesRecentes] =
       await Promise.all([
         Cliente.count(),
         Admin.count(),
         Documento.count(),
+        NIS2Assessment.count(),
         Log.count({
           where: {
             createdAt: { [Op.gte]: inicioHoje, [Op.lt]: inicioAmanha }
@@ -199,6 +202,7 @@ router.get('/stats', auth, requireRole(['Admin']), async (req, res) => {
       clientes,
       utilizadores: adminsEGestores + clientes,
       documentos,
+      nis2Avaliacoes,
       atividade: atividadeHoje,
       atividadeHoje,
       clientesRecentes

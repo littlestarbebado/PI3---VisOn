@@ -30,6 +30,7 @@ const MensagemPedido = require('./MensagemPedido')(sequelize);
 const Log = require('./Log')(sequelize);
 const Incidente = require('./Incidente')(sequelize);
 const NewsletterSubscription = require('./NewsletterSubscription')(sequelize);
+const NIS2Assessment = require('./NIS2Assessment')(sequelize);
 
 Cliente.hasMany(AtivoTecnologico, { foreignKey: 'ClienteId', as: 'ativos' });
 AtivoTecnologico.belongsTo(Cliente, { foreignKey: 'ClienteId' });
@@ -45,6 +46,9 @@ MensagemPedido.belongsTo(Pedido, { foreignKey: 'PedidoId', as: 'pedido' });
 
 Cliente.hasMany(Incidente, { foreignKey: 'ClienteId', as: 'incidentes' });
 Incidente.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
+
+Cliente.hasOne(NIS2Assessment, { foreignKey: 'ClienteId', as: 'avaliacaoNIS2' });
+NIS2Assessment.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
 
 async function ensureDefaultAdmin() {
   try {
@@ -133,5 +137,6 @@ module.exports = {
   MensagemPedido,
   Log,
   Incidente,
-  NewsletterSubscription
+  NewsletterSubscription,
+  NIS2Assessment
 };

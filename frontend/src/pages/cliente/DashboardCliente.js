@@ -3,13 +3,33 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+
+function classificarRisco(score) {
+  if (score <= 30) return { nivel: 'Alto', cor: '#dc2626' };
+  if (score <= 70) return { nivel: 'Médio', cor: '#ca8a04' };
+  return { nivel: 'Baixo', cor: '#16a34a' };
+}
+
+function estadoNIS2Label(estado) {
+  return {
+    'Nao Iniciado': 'Não Iniciado',
+    'Em Analise': 'Em Análise',
+    Conforme: 'Conforme',
+    'Nao Conforme': 'Não Conforme'
+  }[estado] || 'Não Iniciado';
+}
+
 export default function DashboardCliente() {
   const { user } = useAuth(); // Vai buscar os dados da empresa logada
   const [documentos, setDocumentos] = useState([]);
+  const [nis2, setNis2] = useState(null);
+  const [nis2Evidencias, setNis2Evidencias] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Como o score real está na BD, usamos o que vem do login ou pomos um fallback slay
   const scoreSeguranca = user?.score ?? 0;
+  const risco = classificarRisco(scoreSeguranca);
 
   useEffect(() => {
     // Busca os documentos específicos desta empresa
@@ -22,6 +42,13 @@ export default function DashboardCliente() {
         console.error('Erro ao carregar dados do cliente:', err);
         setLoading(false);
       });
+
+    api.get('/nis2')
+      .then(response => {
+        setNis2(response.data.avaliacao);
+        setNis2Evidencias(response.data.evidencias || []);
+      })
+      .catch(() => setNis2(null));
   }, []);
 
   return (
@@ -43,9 +70,46 @@ export default function DashboardCliente() {
               </p>
               <h5 style={{ color: '#ffffff', fontWeight: 800, margin: 0 }}>Pedidos de esclarecimento</h5>
             </div>
-            <Link to="/cliente/chat" className="btn btn-info text-dark fw-bold" style={{ borderRadius: '8px' }}>
-              Abrir Chat
-            </Link>
+            <div className="d-flex gap-2 flex-wrap">
+              <Link to="/cliente/submissoes" className="btn btn-primary fw-bold" style={{ borderRadius: '8px' }}>
+                Submissões e Evidências
+              </Link>
+              <Link to="/cliente/chat" className="btn btn-info text-dark fw-bold" style={{ borderRadius: '8px' }}>
+                Abrir Chat
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                <div>
+                  <small className="text-uppercase text-muted fw-bold">Conformidade</small>
+                  <h4 className="fw-bold mb-0">Avaliação NIS2</h4>
+                </div>
+                <span className={`badge ${nis2?.estado === 'Conforme' ? 'bg-success' : nis2?.estado === 'Nao Conforme' ? 'bg-danger' : 'bg-primary'}`}>
+                  {estadoNIS2Label(nis2?.estado)}
+                </span>
+              </div>
+              <div className="progress mb-3" style={{ height: 12 }}>
+                <div className="progress-bar" style={{ width: `${nis2?.percentagem || 0}%` }}>
+                  {nis2?.percentagem || 0}%
+                </div>
+              </div>
+              <p className="text-muted mb-0">
+                {nis2?.observacoes || 'A avaliação NIS2 ainda não tem observações.'}
+              </p>
+              {nis2Evidencias.length > 0 && (
+                <div className="mt-3">
+                  <small className="fw-bold text-muted">Evidências associadas:</small>
+                  <ul className="mb-0 mt-1">
+                    {nis2Evidencias.map(documento => <li key={documento.id}>{documento.nome}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -64,11 +128,11 @@ export default function DashboardCliente() {
               <div 
                 className="progress-bar" 
                 role="progressbar" 
-                style={{ width: `${scoreSeguranca}%`, background: scoreSeguranca > 70 ? '#16a34a' : '#ca8a04', borderRadius: '4px' }}
+                style={{ width: `${scoreSeguranca}%`, background: risco.cor, borderRadius: '4px' }}
               ></div>
             </div>
-            <p style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.75rem', marginWith: 0 }}>
-              {scoreSeguranca > 70 ? '🟢 Nível de risco: Baixo' : '🟡 Nível de risco: Moderado'}
+            <p style={{ fontSize: '0.8rem', color: risco.cor, marginTop: '0.75rem', marginBottom: 0, fontWeight: 700 }}>
+              Nível de risco: {risco.nivel}
             </p>
           </div>
         </div>
@@ -100,7 +164,7 @@ export default function DashboardCliente() {
                         </td>
                         <td style={{ color: '#6b7280' }}>{new Date(doc.createdAt).toLocaleDateString('pt-PT')}</td>
                         <td className="text-end">
-                          {doc.caminho && <a href={`http://localhost:5000${doc.caminho}`} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-primary" style={{ borderRadius: '8px', fontWeight: 500 }}>
+                          {doc.caminho && <a href={`${BACKEND_URL}${doc.caminho}`} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-primary" style={{ borderRadius: '8px', fontWeight: 500 }}>
                             <i className="bi bi-download me-1"></i> Descarregar
                           </a>}
                         </td>

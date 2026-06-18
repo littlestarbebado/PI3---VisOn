@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+
 export default function Documentos() {
   const [documents, setDocuments] = useState([]);
   const [search, setSearch] = useState('');
@@ -62,7 +64,7 @@ export default function Documentos() {
 
   // Download real de documentos
   const handleDownload = (doc) => {
-    window.open(`http://localhost:5000${doc.caminho}`, '_blank');
+    window.open(`${BACKEND_URL}${doc.caminho}`, '_blank');
   };
 
   return (
