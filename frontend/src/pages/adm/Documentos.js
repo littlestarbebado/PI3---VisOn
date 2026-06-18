@@ -10,44 +10,53 @@ export default function Documentos() {
     {
       nome: 'Relatório de Avaliação de Risco - Q1 2024',
       cliente: 'TechCorp Solutions',
-      data: '2024-03-15',
+      data: '2024-03-20',
       categoria: 'Relatório',
-      categoriaCor: '#2563eb'
+      categoriaCor: '#2563eb',
+      tipo: 'PDF',
+      tamanho: '2.4 MB',
+      autor: 'Gestor Silva'
     },
     {
       nome: 'Política de Segurança da Informação',
-      cliente: 'Digital Innovations',
-      data: '2024-03-10',
-      categoria: 'Documento',
-      categoriaCor: '#16a34a'
+      cliente: 'TechCorp Solutions',
+      data: '2024-03-18',
+      categoria: 'Documentação',
+      categoriaCor: '#16a34a',
+      tipo: 'PDF',
+      tamanho: '856 KB',
+      autor: 'Admin'
     },
     {
-      nome: 'Pentest Report - Infraestrutura Web',
+      nome: 'PenTest Report - Infraestrutura Web',
       cliente: 'TechCorp Solutions',
-      data: '2024-03-05',
-      categoria: 'Pentest',
-      categoriaCor: '#ef4444'
+      data: '2024-03-15',
+      categoria: 'PenTest',
+      categoriaCor: '#ef4444',
+      tipo: 'PDF',
+      tamanho: '3.1 MB',
+      autor: 'Gestor Silva'
     }
   ];
 
   return (
     <div>
 
-      {/* MODAL */}
       <CarregarDocumentoModal
         show={showModal}
         onClose={() => setShowModal(false)}
       />
 
-      {/* HEADER */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-
+      <div
+        className="d-flex justify-content-between align-items-center mb-4"
+      >
         <div>
 
           <h2
             style={{
               fontWeight: 800,
-              marginBottom: '0.3rem'
+              marginBottom: '0.3rem',
+              color: '#111827'
             }}
           >
             Gestão de Documentos
@@ -55,7 +64,7 @@ export default function Documentos() {
 
           <p
             style={{
-              color: '#6b7280',
+              color: '#64748b',
               margin: 0
             }}
           >
@@ -71,7 +80,7 @@ export default function Documentos() {
             background: '#050b23',
             color: '#fff',
             borderRadius: '10px',
-            padding: '0.6rem 1rem',
+            padding: '0.7rem 1rem',
             fontWeight: 600
           }}
         >
@@ -81,13 +90,12 @@ export default function Documentos() {
 
       </div>
 
-      {/* FILTROS */}
       <div
         style={{
           background: '#fff',
           border: '1px solid #e5e7eb',
           borderRadius: '14px',
-          padding: '1rem',
+          padding: '1.25rem',
           marginBottom: '1.5rem'
         }}
       >
@@ -100,27 +108,18 @@ export default function Documentos() {
               style={{
                 fontWeight: 600,
                 marginBottom: '0.5rem',
-                display: 'block'
+                display: 'block',
+                color: '#111827'
               }}
             >
               Categoria
             </label>
 
-            <select
-              className="form-select"
-            >
-              <option>
-                Todas
-              </option>
-
-              <option>
-                Relatório
-              </option>
-
-              <option>
-                Pentest
-              </option>
-
+            <select className="form-select">
+              <option>Todas</option>
+              <option>Relatório</option>
+              <option>Documentação</option>
+              <option>Pentest</option>
             </select>
 
           </div>
@@ -131,27 +130,16 @@ export default function Documentos() {
               style={{
                 fontWeight: 600,
                 marginBottom: '0.5rem',
-                display: 'block'
+                display: 'block',
+                color: '#111827'
               }}
             >
               Cliente
             </label>
 
-            <select
-              className="form-select"
-            >
-              <option>
-                Todos
-              </option>
-
-              <option>
-                TechCorp Solutions
-              </option>
-
-              <option>
-                Digital Innovations
-              </option>
-
+            <select className="form-select">
+              <option>Todos</option>
+              <option>TechCorp Solutions</option>
             </select>
 
           </div>
@@ -160,20 +148,21 @@ export default function Documentos() {
 
       </div>
 
-      {/* LISTA */}
       <div
         style={{
           background: '#fff',
           borderRadius: '14px',
           border: '1px solid #e5e7eb',
-          padding: '1rem'
+          padding: '1.25rem',
+          
         }}
       >
 
         <h5
           style={{
             fontWeight: 700,
-            marginBottom: '1.5rem'
+            marginBottom: '1.5rem',
+            color: '#111827'
           }}
         >
           Documentos ({documentos.length})
@@ -184,44 +173,48 @@ export default function Documentos() {
           <div
             key={index}
             style={{
-              border: '1px solid #f1f5f9',
+              border: '1px solid #e5e7eb',
               borderRadius: '12px',
-              padding: '1rem',
+              padding: '1.2rem',
               marginBottom: '1rem',
               background: '#fff'
             }}
           >
 
-            <div className="d-flex justify-content-between align-items-center">
+            <div
+              className="d-flex justify-content-between align-items-center"
+            >
 
-              {/* ESQUERDA */}
               <div className="d-flex align-items-center gap-3">
 
-                {/* ÍCONE */}
                 <div
                   style={{
-                    width: '42px',
-                    height: '42px',
+                    width: '52px',
+                    height: '52px',
                     borderRadius: '12px',
                     background: '#eef4ff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#2563eb'
+                    color: '#2563eb',
+                    fontSize: '22px'
                   }}
                 >
                   <i className="bi bi-file-earmark-text"></i>
                 </div>
 
-                {/* INFO */}
                 <div>
 
-                  <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <div
+                    className="d-flex align-items-center gap-2 flex-wrap"
+                  >
 
                     <h6
                       style={{
                         margin: 0,
-                        fontWeight: 700
+                        fontWeight: 700,
+                        fontSize: '18px',
+                        color: '#111827'
                       }}
                     >
                       {doc.nome}
@@ -231,9 +224,9 @@ export default function Documentos() {
                       style={{
                         background: `${doc.categoriaCor}20`,
                         color: doc.categoriaCor,
-                        padding: '0.2rem 0.6rem',
+                        padding: '0.25rem 0.65rem',
                         borderRadius: '999px',
-                        fontSize: '0.72rem',
+                        fontSize: '12px',
                         fontWeight: 600
                       }}
                     >
@@ -242,37 +235,47 @@ export default function Documentos() {
 
                   </div>
 
-                  <small
+                  <div
                     style={{
-                      display: 'block',
-                      color: '#6b7280'
+                      color: '#64748b',
+                      fontSize: '14px',
+                      marginTop: '6px'
+                    }}
+                  >
+                    {doc.tipo}
+                    {'  '}
+                    {doc.tamanho}
+                    {'  '}
+                    Por {doc.autor}
+                    {'  '}
+                    {doc.data}
+                  </div>
+
+                  <div
+                    style={{
+                      color: '#2563eb',
+                      fontSize: '14px',
+                      marginTop: '4px'
                     }}
                   >
                     {doc.cliente}
-                  </small>
-
-                  <small
-                    style={{
-                      display: 'block',
-                      color: '#9ca3af'
-                    }}
-                  >
-                    {doc.data}
-                  </small>
+                  </div>
 
                 </div>
 
               </div>
 
-              {/* AÇÕES */}
-              <div className="d-flex gap-3">
+              <div
+                className="d-flex gap-3"
+              >
 
                 <button
                   style={{
                     border: 'none',
                     background: 'transparent',
                     color: '#2563eb',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    fontSize: '18px'
                   }}
                 >
                   <i className="bi bi-download"></i>
@@ -283,7 +286,8 @@ export default function Documentos() {
                     border: 'none',
                     background: 'transparent',
                     color: '#ef4444',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    fontSize: '18px'
                   }}
                 >
                   <i className="bi bi-trash"></i>
@@ -301,4 +305,4 @@ export default function Documentos() {
 
     </div>
   );
-}   
+}

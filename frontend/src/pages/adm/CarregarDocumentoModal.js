@@ -19,165 +19,130 @@ export default function CarregarDocumentoModal({
         zIndex: 999
       }}
     >
-
       <div
         style={{
-          width: '420px',
+          width: '520px',
           background: '#fff',
           borderRadius: '14px',
-          padding: '1.5rem',
-          position: 'relative'
+          padding: '20px',
+          position: 'relative',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
         }}
       >
-
-        {/* FECHAR */}
         <button
           onClick={onClose}
           style={{
             position: 'absolute',
-            right: '1rem',
-            top: '1rem',
+            right: '16px',
+            top: '12px',
             border: 'none',
             background: 'transparent',
-            fontSize: '1.2rem',
-            color: '#6b7280'
+            fontSize: '22px',
+            color: '#6b7280',
+            cursor: 'pointer'
           }}
         >
           ×
         </button>
 
-        {/* TÍTULO */}
-        <h4
+        <h3
           style={{
-            fontWeight: 700,
-            marginBottom: '1.5rem'
+            fontWeight: '700',
+            color: '#111827',
+            marginBottom: '16px'
           }}
         >
           Carregar Novo Documento
-        </h4>
+        </h3>
 
-        {/* FORM */}
-        <div className="d-flex flex-column gap-3">
+        <div>
 
-          {/* FICHEIRO */}
-          <div>
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Ficheiro *
-            </label>
-
-            <input
-              type="file"
-              className="form-control"
-            />
-
-          </div>
-
-          {/* NOME */}
-          <div>
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Nome do Documento
-            </label>
-
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Ex: Relatório Q1"
-            />
-
-          </div>
-
-          {/* CATEGORIA */}
-          <div>
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Categoria *
-            </label>
-
-            <select
-              className="form-select"
-            >
-              <option>
-                Selecionar categoria
-              </option>
-
-              <option>
-                Relatório
-              </option>
-
-              <option>
-                Política
-              </option>
-
-              <option>
-                Pentest
-              </option>
-
-            </select>
-
-          </div>
-
-          {/* CLIENTE */}
-          <div>
-
-            <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Cliente *
-            </label>
-
-            <select
-              className="form-select"
-            >
-              <option>
-                Selecionar cliente
-              </option>
-
-              <option>
-                TechCorp Solutions
-              </option>
-
-              <option>
-                Digital Innovations
-              </option>
-
-            </select>
-
-          </div>
-
-          {/* BOTÃO */}
-          <button
-            className="btn"
+          <label
             style={{
+              display: 'block',
+              marginBottom: '6px',
+              color: '#111827',
+              fontWeight: '600'
+            }}
+          >
+            Ficheiro *
+          </label>
+
+          <input
+            type="file"
+            className="form-control"
+            style={{ marginBottom: '14px' }}
+          />
+
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '6px',
+              color: '#111827',
+              fontWeight: '600'
+            }}
+          >
+            Nome do Documento
+          </label>
+
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Ex: Relatório Q1 2024"
+            style={{ marginBottom: '14px' }}
+          />
+
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '6px',
+              color: '#111827',
+              fontWeight: '600'
+            }}
+          >
+            Categoria *
+          </label>
+
+          <select
+            className="form-select"
+            style={{ marginBottom: '14px' }}
+          >
+            <option>Selecione a categoria</option>
+            <option>Relatório</option>
+            <option>Documentação</option>
+            <option>PenTest</option>
+          </select>
+
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '6px',
+              color: '#111827',
+              fontWeight: '600'
+            }}
+          >
+            Cliente *
+          </label>
+
+          <select
+            className="form-select"
+            style={{ marginBottom: '20px' }}
+          >
+            <option>Selecione o cliente</option>
+            <option>TechCorp Solutions</option>
+            <option>Digital Innovations</option>
+          </select>
+
+          <button
+            style={{
+              width: '100%',
               background: '#050b23',
               color: '#fff',
-              marginTop: '1rem',
-              padding: '0.8rem',
-              borderRadius: '10px',
-              fontWeight: 600
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px',
+              fontWeight: '600',
+              cursor: 'pointer'
             }}
           >
             Carregar

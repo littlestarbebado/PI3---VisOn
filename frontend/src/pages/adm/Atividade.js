@@ -63,11 +63,13 @@ export default function Atividade() {
       <div className="mb-4">
 
         <h2
-          style={{
-            fontWeight: 800,
-            marginBottom: '0.3rem'
-          }}
-        >
+  style={{
+    fontWeight: 800,
+    fontSize: '42px',
+    color: '#111827',
+    marginBottom: '6px'
+  }}
+>
           Monitorização de Atividade
         </h2>
 
@@ -98,14 +100,16 @@ export default function Atividade() {
           <div className="col-md-6">
 
             <label
-              style={{
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                display: 'block'
-              }}
-            >
-              Pesquisar
-            </label>
+  style={{
+    fontWeight: 700,
+    color: '#374151',
+    marginBottom: '8px',
+    display: 'block',
+    fontSize: '14px'
+  }}
+>
+  Pesquisar
+</label>
 
             <input
               type="text"
@@ -161,7 +165,7 @@ export default function Atividade() {
 
           <div
             key={index}
-            className="col-md-3"
+            className="col-md-6 col-lg-3"
           >
 
             <div
@@ -188,11 +192,12 @@ export default function Atividade() {
                   </p>
 
                   <h3
-                    style={{
-                      margin: 0,
-                      fontWeight: 700
-                    }}
-                  >
+  style={{
+    margin: 0,
+    fontWeight: 800,
+    color: '#111827'
+  }}
+>
                     {item.valor}
                   </h3>
 
@@ -241,14 +246,22 @@ export default function Atividade() {
           }}
         >
           Atividade Recente
-        </h5>
-
+        </h5><h4
+  style={{
+    fontWeight: 700,
+    color: '#111827',
+    marginBottom: '20px'
+  }}
+>
+  Atividade Recente
+</h4>
         {atividades.map((item, index) => (
 
           <div
             key={index}
             style={{
-              background: '#f9fafb',
+              background: '#f8fafc',
+border: '1px solid #f1f5f9',
               borderRadius: '12px',
               padding: '1rem',
               marginBottom: '1rem'
@@ -287,21 +300,28 @@ export default function Atividade() {
                   <div className="d-flex align-items-center gap-2">
 
                     <h6
-                      style={{
-                        margin: 0,
-                        fontWeight: 700
-                      }}
-                    >
+  style={{
+    margin: 0,
+    fontWeight: 700,
+    color: '#111827',
+    fontSize: '15px'
+  }}
+>
                       {item.nome}
                     </h6>
 
-                    <small
-                      style={{
-                        color: '#6b7280'
-                      }}
-                    >
-                      {item.acao}
-                    </small>
+                    <span
+  style={{
+    background: '#f3f4f6',
+    color: '#374151',
+    padding: '3px 10px',
+    borderRadius: '999px',
+    fontSize: '11px',
+    fontWeight: '600'
+  }}
+>
+  {item.acao}
+</span>
 
                   </div>
 
