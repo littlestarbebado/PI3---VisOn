@@ -18,7 +18,7 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await login(email, password);
-      const userRole = data.admin?.role || data.user?.role || data.cliente?.role;
+      const userRole = data.role;
       if (userRole === 'Gestor') nav('/gestor');
       else if (userRole === 'Cliente') nav('/cliente');
       else nav('/admin');

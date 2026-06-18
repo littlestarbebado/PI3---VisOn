@@ -5,7 +5,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
 
-const { sequelize, ensureDefaultAdmin } = require('./src/models');
+const { sequelize, ensureDefaultAdmin, ensureDemoUsers } = require('./src/models');
 
 const app = express();
 const server = http.createServer(app);
@@ -52,7 +52,8 @@ app.use('/api/documentos', require('./src/routes/documentos'));
 const PORT = process.env.PORT || 5000;
 
 sequelize.sync({ alter: true }).then(async () => {
-    await ensureDefaultAdmin();
+  await ensureDefaultAdmin();
+  await ensureDemoUsers();
   console.log('Base de dados sincronizada com o PostgreSQL');
   server.listen(PORT, () => {
     console.log(`Servidor a correr com sucesso na porta ${PORT}`);

@@ -1,75 +1,86 @@
 const router = require('express').Router();
-const { Artigo } = require('../models');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { Admin, Cliente } = require('../models');
 const auth = require('../middlewares/auth');
-const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
 
-// GET /api/artigos — público
-router.get('/', async (req, res) => {
+const JWT_SECRET = process.env.JWT_SECRET || 'vison_secret_2024';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
+
+function utilizadorPublico(utilizador, role) {
+  return {
+    id: utilizador.id,
+    nome: utilizador.nome,
+    email: utilizador.email,
+    telefone: utilizador.telefone || null,
+    role,
+    ...(role === 'Cliente' ? { score: utilizador.score, status: utilizador.status } : {})
+  };
+}
+
+router.post('/login', async (req, res) => {
   try {
-    const artigos = await Artigo.findAll({
-      where: { publicado: true },
-      order: [['dataPublicacao', 'DESC']],
-      attributes: ['id', 'titulo', 'resumo', 'imagem', 'slug', 'dataPublicacao']
-    });
-    res.json(artigos);
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+
+    if (!email || !password) {
+      return res.status(400).json({ erro: 'Email e password sao obrigatorios.' });
+    }
+
+    let utilizador = await Admin.findOne({ where: { email } });
+    let role = utilizador?.role || null;
+
+    if (!utilizador) {
+      utilizador = await Cliente.findOne({ where: { email } });
+      role = utilizador ? 'Cliente' : null;
+    }
+
+    if (!utilizador || !(await bcrypt.compare(password, utilizador.password || ''))) {
+      return res.status(401).json({ erro: 'Credenciais invalidas.' });
+    }
+
+    const ativo = role === 'Cliente' ? utilizador.status !== false : utilizador.ativo !== false;
+    if (!ativo) {
+      return res.status(403).json({ erro: 'Conta suspensa. Acesso revogado.' });
+    }
+
+    const user = utilizadorPublico(utilizador, role);
+    const token = jwt.sign(
+      { id: user.id, nome: user.nome, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    await registrarLog(user.email, 'Login', `Inicio de sessao como ${user.role}`);
+    return res.json({ token, user });
+  } catch (error) {
+    console.error('Erro no login:', error);
+    return res.status(500).json({ erro: 'Erro interno ao iniciar sessao.' });
+  }
 });
 
-// GET /api/artigos/admin — admin: todos
-router.get('/admin', auth, requireRole(['Admin']), async (req, res) => {
+router.get('/me', auth, async (req, res) => {
   try {
-    const artigos = await Artigo.findAll({ order: [['createdAt', 'DESC']] });
-    res.json(artigos);
-  } catch (e) { res.status(500).json({ erro: e.message }); }
-});
+    const role = req.user.role;
+    const utilizador = role === 'Cliente'
+      ? await Cliente.findByPk(req.user.id)
+      : await Admin.findByPk(req.user.id);
 
-// GET /api/artigos/:slug — público
-router.get('/:slug', async (req, res) => {
-  try {
-    const artigo = await Artigo.findOne({ where: { slug: req.params.slug, publicado: true } });
-    if (!artigo) return res.status(404).json({ erro: 'Artigo não encontrado' });
-    res.json(artigo);
-  } catch (e) { res.status(500).json({ erro: e.message }); }
-});
+    if (!utilizador) {
+      return res.status(404).json({ erro: 'Utilizador nao encontrado.' });
+    }
 
-// POST /api/artigos — admin
-router.post('/', auth, requireRole(['Admin']), async (req, res) => {
-  try {
-    const slug = req.body.titulo.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    const artigo = await Artigo.create({ ...req.body, slug, dataPublicacao: req.body.publicado ? new Date() : null });
+    const ativo = role === 'Cliente' ? utilizador.status !== false : utilizador.ativo !== false;
+    if (!ativo) {
+      return res.status(403).json({ erro: 'Conta suspensa. Acesso revogado.' });
+    }
 
-    await registrarLog(req.user.email, 'Criar Artigo', `Artigo criado: "${req.body.titulo}" (slug: ${slug})`);
-
-    res.status(201).json(artigo);
-  } catch (e) { res.status(500).json({ erro: e.message }); }
-});
-
-// PUT /api/artigos/:id — admin
-router.put('/:id', auth, requireRole(['Admin']), async (req, res) => {
-  try {
-    const artigo = await Artigo.findByPk(req.params.id);
-    if (!artigo) return res.status(404).json({ erro: 'Não encontrado' });
-    if (req.body.publicado && !artigo.dataPublicacao) req.body.dataPublicacao = new Date();
-    await artigo.update(req.body);
-
-    await registrarLog(req.user.email, 'Editar Artigo', `Artigo editado: "${artigo.titulo}" (id: ${req.params.id})`);
-
-    res.json(artigo);
-  } catch (e) { res.status(500).json({ erro: e.message }); }
-});
-
-// DELETE /api/artigos/:id — admin
-router.delete('/:id', auth, requireRole(['Admin']), async (req, res) => {
-  try {
-    const artigo = await Artigo.findByPk(req.params.id);
-    if (!artigo) return res.status(404).json({ erro: 'Não encontrado' });
-
-    await registrarLog(req.user.email, 'Remover Artigo', `Artigo eliminado: "${artigo.titulo}" (id: ${req.params.id})`);
-
-    await Artigo.destroy({ where: { id: req.params.id } });
-    res.json({ mensagem: 'Artigo eliminado' });
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+    return res.json({ user: utilizadorPublico(utilizador, role) });
+  } catch (error) {
+    console.error('Erro ao restaurar sessao:', error);
+    return res.status(500).json({ erro: 'Erro interno ao validar sessao.' });
+  }
 });
 
 module.exports = router;
