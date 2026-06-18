@@ -151,11 +151,12 @@ const DetalhesCliente = () => {
     setUploading(true);
 
     const formData = new FormData();
-    formData.append('pdf', ficheiro);
+    formData.append('ficheiro', ficheiro);
     formData.append('nome', nomeDoc);
     formData.append('descricao', descDoc);
+    formData.append('ClienteId', id);
 
-    api.post(`/clientes/${id}/documentos`, formData, {
+    api.post('/documentos', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
       .then(() => {

@@ -1,8 +1,10 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Admin, Cliente } = require('../models');
+const { Op } = require('sequelize');
+const { Admin, Cliente, Documento, Log } = require('../models');
 const auth = require('../middlewares/auth');
+const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'vison_secret_2024';
@@ -80,6 +82,130 @@ router.get('/me', auth, async (req, res) => {
   } catch (error) {
     console.error('Erro ao restaurar sessao:', error);
     return res.status(500).json({ erro: 'Erro interno ao validar sessao.' });
+  }
+});
+
+// GET /api/auth/utilizadores - lista conjunta para a gestao de utilizadores
+router.get('/utilizadores', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const [adminsEGestores, clientes] = await Promise.all([
+      Admin.findAll({
+        attributes: ['id', 'nome', 'email', 'telefone', 'role'],
+        order: [['nome', 'ASC']]
+      }),
+      Cliente.findAll({
+        attributes: ['id', 'nome', 'email', 'telefone', 'score', 'status'],
+        order: [['nome', 'ASC']]
+      })
+    ]);
+
+    const utilizadores = [
+      ...adminsEGestores.map((utilizador) =>
+        utilizadorPublico(utilizador, utilizador.role || 'Gestor')
+      ),
+      ...clientes.map((cliente) => utilizadorPublico(cliente, 'Cliente'))
+    ];
+
+    return res.json(utilizadores);
+  } catch (error) {
+    console.error('Erro ao listar utilizadores:', error);
+    return res.status(500).json({ erro: 'Erro interno ao listar utilizadores.' });
+  }
+});
+
+router.post('/gestores', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const nome = String(req.body.nome || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+    const telefone = String(req.body.telefone || '').trim() || null;
+
+    if (!nome || !email || !password) {
+      return res.status(400).json({ erro: 'Nome, email e password sao obrigatorios.' });
+    }
+
+    const [adminExistente, clienteExistente] = await Promise.all([
+      Admin.findOne({ where: { email } }),
+      Cliente.findOne({ where: { email } })
+    ]);
+    if (adminExistente || clienteExistente) {
+      return res.status(409).json({ erro: 'Ja existe um utilizador com este email.' });
+    }
+
+    const gestor = await Admin.create({
+      nome,
+      email,
+      telefone,
+      password: await bcrypt.hash(password, 10),
+      role: 'Gestor',
+      ativo: true
+    });
+    await registrarLog(req.user.email, 'Criar Gestor', `Gestor criado: ${email} (${nome})`);
+    return res.status(201).json(utilizadorPublico(gestor, 'Gestor'));
+  } catch (error) {
+    console.error('Erro ao criar gestor:', error);
+    return res.status(500).json({ erro: 'Erro interno ao criar gestor.' });
+  }
+});
+
+router.delete('/utilizadores/:role/:id', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const role = req.params.role;
+    if (!['Gestor', 'Cliente'].includes(role)) {
+      return res.status(400).json({ erro: 'Tipo de utilizador invalido.' });
+    }
+
+    const Model = role === 'Cliente' ? Cliente : Admin;
+    const utilizador = await Model.findByPk(req.params.id);
+    if (!utilizador || (role === 'Gestor' && utilizador.role !== 'Gestor')) {
+      return res.status(404).json({ erro: 'Utilizador nao encontrado.' });
+    }
+
+    await utilizador.destroy();
+    await registrarLog(req.user.email, 'Remover Utilizador', `${role} removido: ${utilizador.email}`);
+    return res.status(204).send();
+  } catch (error) {
+    console.error('Erro ao remover utilizador:', error);
+    return res.status(500).json({ erro: 'Erro interno ao remover utilizador.' });
+  }
+});
+
+router.get('/stats', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const inicioHoje = new Date();
+    inicioHoje.setHours(0, 0, 0, 0);
+
+    const inicioAmanha = new Date(inicioHoje);
+    inicioAmanha.setDate(inicioAmanha.getDate() + 1);
+
+    const [clientes, adminsEGestores, documentos, atividadeHoje, clientesRecentes] =
+      await Promise.all([
+        Cliente.count(),
+        Admin.count(),
+        Documento.count(),
+        Log.count({
+          where: {
+            createdAt: { [Op.gte]: inicioHoje, [Op.lt]: inicioAmanha }
+          }
+        }),
+        Cliente.findAll({
+          attributes: ['id', 'nome', 'email', 'score', 'createdAt'],
+          order: [['createdAt', 'DESC']],
+          limit: 5
+        })
+      ]);
+
+    return res.json({
+      clientes,
+      utilizadores: adminsEGestores + clientes,
+      documentos,
+      atividade: atividadeHoje,
+      atividadeHoje,
+      clientesRecentes
+    });
+  } catch (error) {
+    console.error('Erro ao carregar estatisticas:', error);
+    return res.status(500).json({ erro: 'Erro interno ao carregar estatisticas.' });
   }
 });
 

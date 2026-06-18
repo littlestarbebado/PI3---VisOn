@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 export default function Documentos() {
   const [documents, setDocuments] = useState([]);
@@ -13,9 +13,10 @@ export default function Documentos() {
 
   // Função para ir buscar a lista de documentos à Base de Dados
   const fetchDocuments = () => {
-    axios.get(`http://localhost:3000/api/documents/list?search=${search}`)
+    api.get('/documentos')
       .then(res => {
-        if (res.data.success) setDocuments(res.data.documents);
+        const termo = search.trim().toLowerCase();
+        setDocuments((res.data || []).filter(doc => !termo || doc.nome.toLowerCase().includes(termo)));
       })
       .catch(err => console.error("Erro ao carregar documentos:", err));
   };
@@ -28,20 +29,17 @@ export default function Documentos() {
   const handleUpload = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('title', title);
-    formData.append('tag', tag);
+    formData.append('nome', title);
+    formData.append('descricao', tag);
+    formData.append('ClienteId', clienteId);
     if (selectedFile) {
-      formData.append('file', selectedFile);
+      formData.append('ficheiro', selectedFile);
     }
 
     // Se preencheres o ID do Cliente, usa a rota: /clientes/:id/documentos
-    const url = clienteId.trim() 
-      ? `http://localhost:3000/api/documents/clientes/${clienteId}/documentos`
-      : 'http://localhost:3000/api/documents/upload';
-
-    axios.post(url, formData)
+    api.post('/documentos', formData)
       .then(res => {
-        alert(res.data.message);
+        alert('Documento carregado com sucesso.');
         setTitle('');
         setClienteId('');
         setSelectedFile(null);
@@ -53,7 +51,7 @@ export default function Documentos() {
   // Remoção de documentos
   const handleDelete = (id) => {
     if (window.confirm("Tem a certeza que deseja eliminar este documento?")) {
-      axios.delete(`http://localhost:3000/api/documents/delete/${id}`)
+      api.delete(`/documentos/${id}`)
         .then(res => {
           alert(res.data.message);
           fetchDocuments(); 
@@ -64,7 +62,7 @@ export default function Documentos() {
 
   // Download real de documentos
   const handleDownload = (doc) => {
-    window.open(`http://localhost:3000/uploads/${doc.title}`, '_blank');
+    window.open(`http://localhost:5000${doc.caminho}`, '_blank');
   };
 
   return (
@@ -124,11 +122,11 @@ export default function Documentos() {
               <div key={doc.id} className="p-3 border rounded bg-light d-flex justify-content-between align-items-center">
                 <div>
                   <h6 className="m-0 fw-bold text-dark">
-                    {doc.title} 
-                    <span className="badge bg-secondary ms-2">{doc.tag}</span>
-                    {doc.clienteId && <span className="badge bg-info text-dark ms-2">Cliente ID: {doc.clienteId}</span>}
+                    {doc.nome}
+                    <span className="badge bg-secondary ms-2">{doc.tipo || 'Documento'}</span>
+                    {doc.ClienteId && <span className="badge bg-info text-dark ms-2">Cliente ID: {doc.ClienteId}</span>}
                   </h6>
-                  <small className="text-muted">{doc.type} • {doc.size} • Enviado por: {doc.uploadedBy} em {doc.date}</small>
+                  <small className="text-muted">{doc.descricao || 'Sem descrição'} · {new Date(doc.createdAt).toLocaleDateString('pt-PT')}</small>
                 </div>
                 <div className="d-flex gap-2">
                   <button className="btn btn-sm btn-success" onClick={() => handleDownload(doc)}>📥 Download</button>

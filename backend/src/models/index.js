@@ -29,12 +29,13 @@ const Pedido = require('./Pedido')(sequelize);
 const MensagemPedido = require('./MensagemPedido')(sequelize);
 const Log = require('./Log')(sequelize);
 const Incidente = require('./Incidente')(sequelize);
+const NewsletterSubscription = require('./NewsletterSubscription')(sequelize);
 
 Cliente.hasMany(AtivoTecnologico, { foreignKey: 'ClienteId', as: 'ativos' });
 AtivoTecnologico.belongsTo(Cliente, { foreignKey: 'ClienteId' });
 
 Cliente.hasMany(Documento, { foreignKey: 'ClienteId', as: 'documentos' });
-Documento.belongsTo(Cliente, { foreignKey: 'ClienteId' });
+Documento.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
 
 Cliente.hasMany(Pedido, { foreignKey: 'ClienteId', as: 'pedidos' });
 Pedido.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
@@ -131,5 +132,6 @@ module.exports = {
   Pedido,
   MensagemPedido,
   Log,
-  Incidente
+  Incidente,
+  NewsletterSubscription
 };

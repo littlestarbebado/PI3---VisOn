@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { ConteudoInstitucional } = require('../models');
 const auth = require('../middlewares/auth');
+const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
 
 // GET /api/conteudos — público
@@ -14,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/conteudos/list — admin
-router.get('/list', auth, async (req, res) => {
+router.get('/list', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const conteudos = await ConteudoInstitucional.findAll({ order: [['secao', 'ASC'], ['chave', 'ASC']] });
     res.json(conteudos);
@@ -22,7 +23,7 @@ router.get('/list', auth, async (req, res) => {
 });
 
 // PUT /api/conteudos/:id — admin
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const c = await ConteudoInstitucional.findByPk(req.params.id);
     if (!c) return res.status(404).json({ erro: 'Não encontrado' });
@@ -35,7 +36,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // POST /api/conteudos — admin
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const c = await ConteudoInstitucional.create(req.body);
 
@@ -46,7 +47,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // POST /api/conteudos/seed — admin
-router.post('/seed', auth, async (req, res) => {
+router.post('/seed', auth, requireRole(['Admin']), async (req, res) => {
   const defaults = [
     { chave: 'hero_titulo', valor: 'Proteja o Futuro Digital da sua Organização', secao: 'hero' },
     { chave: 'hero_subtitulo', valor: 'Soluções avançadas de cibersegurança para empresas que valorizam a proteção dos seus dados e sistemas.', secao: 'hero' },

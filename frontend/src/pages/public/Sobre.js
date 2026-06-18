@@ -23,6 +23,10 @@ export default function Sobre() {
     api.get('/conteudos').then(r => setConteudos(r.data)).catch(() => {});
   }, []);
 
+  const valores = conteudos.valores_texto
+    ? conteudos.valores_texto.split(',').map((titulo, index) => ({ ...VALORES[index % VALORES.length], title: titulo.trim() })).filter(item => item.title)
+    : VALORES;
+
   return (
     <>
       <Navbar />
@@ -69,7 +73,7 @@ export default function Sobre() {
             <p className="section-sub">Princípios que guiam o nosso trabalho e relacionamento com os clientes</p>
           </div>
           <div className="row g-4">
-            {VALORES.map((v, i) => (
+            {valores.map((v, i) => (
               <div key={i} className="col-6 col-md-3">
                 <div className="vison-card h-100 text-center">
                   <div className={`icon-box ${v.color} mx-auto`}><i className={`bi ${v.icon}`} /></div>

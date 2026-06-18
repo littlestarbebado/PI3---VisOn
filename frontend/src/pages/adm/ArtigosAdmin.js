@@ -1,201 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import api from '../../services/api';
+
+const vazio = { titulo: '', resumo: '', conteudo: '', autor: '', categoria: 'Geral', imagem: '', publicado: true };
 
 export default function ArtigosAdmin() {
+  const [artigos, setArtigos] = useState([]);
+  const [form, setForm] = useState(vazio);
+  const [editId, setEditId] = useState(null);
+  const [erro, setErro] = useState('');
 
-  const [artigos, setArtigos] = useState([
-    {
-      id: 1,
-      titulo: 'NIS2: O que muda para as empresas portuguesas',
-      resumo:
-        'A Diretiva NIS2 traz novas obrigações para empresas de setores essenciais e importantes. Saiba o que muda.',
-      autor: 'Dr. António Silva',
-      data: '2024-03-15',
-      categoria: 'Regulamentação'
-    },
-    {
-      id: 2,
-      titulo: 'Pentesting: Como proteger a sua infraestrutura',
-      resumo:
-        'Os testes de penetração são essenciais para identificar vulnerabilidades antes dos atacantes.',
-      autor: 'Eng. Maria Costa',
-      data: '2024-03-10',
-      categoria: 'Segurança Ofensiva'
-    },
-    {
-      id: 3,
-      titulo: 'Avaliação de Maturidade em Cibersegurança',
-      resumo:
-        'Conheça os níveis de maturidade e como evoluir a postura de segurança da sua organização.',
-      autor: 'Dr. João Pereira',
-      data: '2024-03-05',
-      categoria: 'Governança'
-    }
-  ]);
+  const carregar = () => api.get('/artigos/admin').then(r => setArtigos(r.data || [])).catch(e => setErro(e.response?.data?.erro || 'Erro ao carregar artigos.'));
+  useEffect(carregar, []);
 
-  const apagarArtigo = (id) => {
-    setArtigos(artigos.filter(a => a.id !== id));
+  const guardar = async () => {
+    if (!form.titulo.trim() || !form.conteudo.trim()) { setErro('Título e conteúdo são obrigatórios.'); return; }
+    try {
+      if (editId) await api.put(`/artigos/${editId}`, form);
+      else await api.post('/artigos', form);
+      setForm(vazio); setEditId(null); setErro(''); carregar();
+    } catch (e) { setErro(e.response?.data?.erro || 'Erro ao guardar artigo.'); }
   };
 
-  return (
-    <div>
+  const editar = artigo => { setEditId(artigo.id); setForm({ ...vazio, ...artigo }); };
+  const eliminar = async id => { if (!window.confirm('Eliminar este artigo?')) return; await api.delete(`/artigos/${id}`); carregar(); };
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '30px'
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              fontWeight: '800',
-              color: '#111827',
-              marginBottom: '5px'
-            }}
-          >
-            Artigos
-          </h2>
-
-          <p
-            style={{
-              color: '#6b7280',
-              margin: 0
-            }}
-          >
-            Gerir artigos técnicos do site público
-          </p>
-        </div>
-
-        <button
-          style={{
-            background: '#050b23',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '10px',
-            padding: '12px 20px',
-            fontWeight: '600'
-          }}
-        >
-          + Novo Artigo
-        </button>
-      </div>
-
-      <div
-        style={{
-          background: '#fff',
-          border: '1px solid #e5e7eb',
-          borderRadius: '14px',
-          padding: '20px'
-        }}
-      >
-
-        {artigos.map((artigo) => (
-
-          <div
-            key={artigo.id}
-            style={{
-              background: '#f9fafb',
-              borderRadius: '12px',
-              padding: '20px',
-              marginBottom: '15px'
-            }}
-          >
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '10px'
-              }}
-            >
-
-              <h4
-                style={{
-                  fontWeight: '700',
-                  color: '#111827',
-                  margin: 0
-                }}
-              >
-                {artigo.titulo}
-              </h4>
-
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '15px'
-                }}
-              >
-                <button
-                  style={{
-                    border: 'none',
-                    background: 'transparent',
-                    cursor: 'pointer'
-                  }}
-                >
-                  ✏️
-                </button>
-
-                <button
-                  onClick={() => apagarArtigo(artigo.id)}
-                  style={{
-                    border: 'none',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    color: 'red'
-                  }}
-                >
-                  🗑️
-                </button>
-              </div>
-
-            </div>
-
-            <p
-              style={{
-                color: '#6b7280',
-                marginBottom: '10px'
-              }}
-            >
-              {artigo.resumo}
-            </p>
-
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'center'
-              }}
-            >
-              <small style={{ color: '#9ca3af' }}>
-                {artigo.autor}
-              </small>
-
-              <small style={{ color: '#9ca3af' }}>
-                {artigo.data}
-              </small>
-
-              <span
-                style={{
-                  background: '#dbeafe',
-                  color: '#2563eb',
-                  padding: '4px 10px',
-                  borderRadius: '999px',
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}
-              >
-                {artigo.categoria}
-              </span>
-            </div>
-
-          </div>
-
-        ))}
-
-      </div>
-
+  return <div>
+    <h3 className="fw-bold mb-3">Artigos</h3>
+    {erro && <div className="alert alert-danger">{erro}</div>}
+    <div className="card p-3 mb-4">
+      <input className="form-control mb-2" placeholder="Título" value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
+      <input className="form-control mb-2" placeholder="Resumo" value={form.resumo || ''} onChange={e => setForm({ ...form, resumo: e.target.value })} />
+      <textarea className="form-control mb-2" rows="5" placeholder="Conteúdo" value={form.conteudo} onChange={e => setForm({ ...form, conteudo: e.target.value })} />
+      <div className="row g-2 mb-2"><div className="col"><input className="form-control" placeholder="Autor" value={form.autor || ''} onChange={e => setForm({ ...form, autor: e.target.value })} /></div><div className="col"><input className="form-control" placeholder="Categoria" value={form.categoria || ''} onChange={e => setForm({ ...form, categoria: e.target.value })} /></div></div>
+      <input className="form-control mb-2" placeholder="URL da imagem" value={form.imagem || ''} onChange={e => setForm({ ...form, imagem: e.target.value })} />
+      <label className="form-check mb-3"><input type="checkbox" className="form-check-input" checked={form.publicado} onChange={e => setForm({ ...form, publicado: e.target.checked })} /> Publicado</label>
+      <div><button className="btn btn-dark me-2" onClick={guardar}>{editId ? 'Guardar Alterações' : 'Criar Artigo'}</button>{editId && <button className="btn btn-light" onClick={() => { setEditId(null); setForm(vazio); }}>Cancelar</button>}</div>
     </div>
-  );
+    {artigos.map(artigo => <div key={artigo.id} className="card p-3 mb-2"><div className="d-flex justify-content-between"><div><strong>{artigo.titulo}</strong><div className="text-muted small">{artigo.autor || 'Sem autor'} · {artigo.publicado ? 'Publicado' : 'Rascunho'}</div></div><div><button className="btn btn-sm btn-outline-primary me-2" onClick={() => editar(artigo)}>Editar</button><button className="btn btn-sm btn-outline-danger" onClick={() => eliminar(artigo.id)}>Eliminar</button></div></div></div>)}
+  </div>;
 }

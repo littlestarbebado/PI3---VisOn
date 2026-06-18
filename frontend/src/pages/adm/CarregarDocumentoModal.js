@@ -1,157 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
+import api from '../../services/api';
 
-export default function CarregarDocumentoModal({
-  show,
-  onClose
-}) {
+export default function CarregarDocumentoModal({ show, onClose, clientes, onUploaded }) {
+  const [ficheiro, setFicheiro] = useState(null);
+  const [nome, setNome] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [clienteId, setClienteId] = useState('');
+  const [erro, setErro] = useState('');
+  const [aEnviar, setAEnviar] = useState(false);
 
   if (!show) return null;
 
+  const carregar = async () => {
+    if (!ficheiro || !clienteId) {
+      setErro('Selecione um ficheiro e um cliente.');
+      return;
+    }
+
+    const dados = new FormData();
+    dados.append('ficheiro', ficheiro);
+    dados.append('nome', nome);
+    dados.append('descricao', descricao);
+    dados.append('ClienteId', clienteId);
+
+    setAEnviar(true);
+    setErro('');
+    try {
+      await api.post('/documentos', dados, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setFicheiro(null);
+      setNome('');
+      setDescricao('');
+      setClienteId('');
+      onUploaded();
+      onClose();
+    } catch (error) {
+      setErro(error.response?.data?.erro || 'Erro ao carregar documento.');
+    } finally {
+      setAEnviar(false);
+    }
+  };
+
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.45)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 999
-      }}
-    >
-      <div
-        style={{
-          width: '520px',
-          background: '#fff',
-          borderRadius: '14px',
-          padding: '20px',
-          position: 'relative',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
-        }}
-      >
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            right: '16px',
-            top: '12px',
-            border: 'none',
-            background: 'transparent',
-            fontSize: '22px',
-            color: '#6b7280',
-            cursor: 'pointer'
-          }}
-        >
-          ×
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+      <div style={{ width: 520, background: '#fff', borderRadius: 14, padding: 20, position: 'relative' }}>
+        <button onClick={onClose} style={{ position: 'absolute', right: 16, top: 12, border: 0, background: 'transparent', fontSize: 22 }}>×</button>
+        <h3 className="fw-bold mb-3">Carregar Novo Documento</h3>
+        {erro && <div className="alert alert-danger py-2">{erro}</div>}
+        <input type="file" className="form-control mb-3" onChange={e => setFicheiro(e.target.files?.[0] || null)} />
+        <input type="text" className="form-control mb-3" placeholder="Nome do documento" value={nome} onChange={e => setNome(e.target.value)} />
+        <textarea className="form-control mb-3" placeholder="Descrição" value={descricao} onChange={e => setDescricao(e.target.value)} />
+        <select className="form-select mb-3" value={clienteId} onChange={e => setClienteId(e.target.value)}>
+          <option value="">Selecione o cliente</option>
+          {clientes.map(cliente => <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>)}
+        </select>
+        <button onClick={carregar} disabled={aEnviar} className="btn btn-dark w-100">
+          {aEnviar ? 'A carregar...' : 'Carregar'}
         </button>
-
-        <h3
-          style={{
-            fontWeight: '700',
-            color: '#111827',
-            marginBottom: '16px'
-          }}
-        >
-          Carregar Novo Documento
-        </h3>
-
-        <div>
-
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '6px',
-              color: '#111827',
-              fontWeight: '600'
-            }}
-          >
-            Ficheiro *
-          </label>
-
-          <input
-            type="file"
-            className="form-control"
-            style={{ marginBottom: '14px' }}
-          />
-
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '6px',
-              color: '#111827',
-              fontWeight: '600'
-            }}
-          >
-            Nome do Documento
-          </label>
-
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Ex: Relatório Q1 2024"
-            style={{ marginBottom: '14px' }}
-          />
-
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '6px',
-              color: '#111827',
-              fontWeight: '600'
-            }}
-          >
-            Categoria *
-          </label>
-
-          <select
-            className="form-select"
-            style={{ marginBottom: '14px' }}
-          >
-            <option>Selecione a categoria</option>
-            <option>Relatório</option>
-            <option>Documentação</option>
-            <option>PenTest</option>
-          </select>
-
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '6px',
-              color: '#111827',
-              fontWeight: '600'
-            }}
-          >
-            Cliente *
-          </label>
-
-          <select
-            className="form-select"
-            style={{ marginBottom: '20px' }}
-          >
-            <option>Selecione o cliente</option>
-            <option>TechCorp Solutions</option>
-            <option>Digital Innovations</option>
-          </select>
-
-          <button
-            style={{
-              width: '100%',
-              background: '#050b23',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '12px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            Carregar
-          </button>
-
-        </div>
-
       </div>
-
     </div>
   );
 }

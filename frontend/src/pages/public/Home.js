@@ -5,10 +5,10 @@ import Footer from '../../components/Footer';
 import api from '../../services/api';
 
 const STATS_DEFAULT = [
-  { num: '150+', label: 'Clientes Ativos', color: '', icon: 'bi-people' },
-  { num: '500+', label: 'PenTests Realizados', color: 'blue', icon: 'bi-shield-check' },
-  { num: '98%', label: 'Taxa de Satisfação', color: 'cyan', icon: 'bi-graph-up' },
-  { num: '15+', label: 'Anos de Experiência', color: 'pink', icon: 'bi-award' },
+  { key: 'stat_clientes', num: '150+', label: 'Clientes Ativos', color: '', icon: 'bi-people' },
+  { key: 'stat_pentests', num: '500+', label: 'PenTests Realizados', color: 'blue', icon: 'bi-shield-check' },
+  { key: 'stat_satisfacao', num: '98%', label: 'Taxa de Satisfação', color: 'cyan', icon: 'bi-graph-up' },
+  { key: 'stat_anos', num: '15+', label: 'Anos de Experiência', color: 'pink', icon: 'bi-award' },
 ];
 
 const SERVICOS = [
@@ -19,9 +19,13 @@ const SERVICOS = [
 
 export default function Home() {
   const [conteudos, setConteudos] = useState({});
+  const [servicos, setServicos] = useState(SERVICOS);
 
   useEffect(() => {
-    api.get('/conteudos').then(r => setConteudos(r.data)).catch(() => {});
+    api.get('/conteudos').then(r => {
+      setConteudos(r.data);
+      if (r.data.servicos_json) setServicos(JSON.parse(r.data.servicos_json).slice(0, 3));
+    }).catch(() => {});
   }, []);
 
   const heroTitle = conteudos.hero_titulo || 'Proteja o Futuro Digital da sua Organização';
@@ -63,7 +67,7 @@ export default function Home() {
               <div key={i} className="col-6 col-md-3">
                 <i className={`bi ${s.icon} mb-2`} style={{ fontSize: '1.6rem', color: s.color === 'blue' ? 'var(--vison-blue)' : s.color === 'cyan' ? 'var(--vison-cyan)' : s.color === 'pink' ? 'var(--vison-pink)' : '#64748b' }} />
                 <div className={`stat-num ${s.color}`} style={{ color: s.color === 'blue' ? '#3b82f6' : s.color === 'cyan' ? '#06b6d4' : s.color === 'pink' ? '#ec4899' : '#0d1117' }}>
-                  {conteudos[`stat_${s.label.split(' ')[0].toLowerCase()}`] || s.num}
+                  {conteudos[s.key] || s.num}
                 </div>
                 <div className="stat-label">{s.label}</div>
               </div>
@@ -80,12 +84,12 @@ export default function Home() {
             <p className="section-sub">Oferecemos soluções completas de cibersegurança adaptadas às necessidades da sua organização</p>
           </div>
           <div className="row g-4">
-            {SERVICOS.map((s, i) => (
+            {servicos.map((s, i) => (
               <div key={i} className="col-md-4">
                 <div className="vison-card h-100">
                   <div className={`icon-box ${s.color}`}><i className={`bi ${s.icon}`} /></div>
-                  <h5 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>{s.title}</h5>
-                  <p style={{ color: 'var(--vison-gray)', fontSize: '0.88rem', marginBottom: '1.2rem' }}>{s.desc}</p>
+                  <h5 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>{s.title || s.titulo}</h5>
+                  <p style={{ color: 'var(--vison-gray)', fontSize: '0.88rem', marginBottom: '1.2rem' }}>{s.desc || s.descricao}</p>
                   <Link to="/servicos" style={{ color: 'var(--vison-blue)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}>
                     Saber Mais →
                   </Link>

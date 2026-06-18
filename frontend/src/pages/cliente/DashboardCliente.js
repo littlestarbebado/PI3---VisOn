@@ -9,17 +9,13 @@ export default function DashboardCliente() {
   const [loading, setLoading] = useState(true);
 
   // Como o score real está na BD, usamos o que vem do login ou pomos um fallback slay
-  const scoreSeguranca = user?.score || 75; 
+  const scoreSeguranca = user?.score ?? 0;
 
   useEffect(() => {
     // Busca os documentos específicos desta empresa
-    api.get('/auth/stats') // Reutiliza a rota de estatísticas por agora
+    api.get('/documentos')
       .then(res => {
-        // Mock de documentos caso a rota global ainda não filtre por ID de cliente
-        setDocumentos([
-          { id: 1, nome: 'Relatório de Avaliação de Risco - Q1 2026.pdf', data: '2026-05-20' },
-          { id: 2, nome: 'Políticas de Segurança Interna - V1.pdf', data: '2026-05-15' }
-        ]);
+        setDocumentos(res.data || []);
         setLoading(false);
       })
       .catch(err => {
@@ -102,11 +98,11 @@ export default function DashboardCliente() {
                         <td style={{ fontWeight: 500, color: '#111827' }}>
                           <i className="bi bi-file-earmark-pdf text-danger me-2"></i> {doc.nome}
                         </td>
-                        <td style={{ color: '#6b7280' }}>{doc.data}</td>
+                        <td style={{ color: '#6b7280' }}>{new Date(doc.createdAt).toLocaleDateString('pt-PT')}</td>
                         <td className="text-end">
-                          <button className="btn btn-sm btn-outline-primary" style={{ borderRadius: '8px', fontWeight: 500 }}>
+                          {doc.caminho && <a href={`http://localhost:5000${doc.caminho}`} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-primary" style={{ borderRadius: '8px', fontWeight: 500 }}>
                             <i className="bi bi-download me-1"></i> Descarregar
-                          </button>
+                          </a>}
                         </td>
                       </tr>
                     ))}

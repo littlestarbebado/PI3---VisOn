@@ -34,10 +34,10 @@ export default function Utilizadores() {
   }, []);
 
   // Eliminar utilizador
-  function eliminarUtilizador(id) {
+  function eliminarUtilizador(id, role) {
     if (!window.confirm('Tens a certeza que queres eliminar este utilizador?')) return;
 
-    api.delete(`/auth/utilizadores/${id}`)
+    api.delete(`/auth/utilizadores/${role}/${id}`)
       .then(() => {
         // Após eliminar, atualizar a lista (sem reload)
         carregarUtilizadores();
@@ -176,7 +176,7 @@ export default function Utilizadores() {
 
   return (
     <div
-      key={user.id}
+      key={`${user.role}-${user.id}`}
       style={{
         border: '1px solid #f1f5f9',
         borderRadius: '12px',
@@ -242,7 +242,7 @@ export default function Utilizadores() {
         {user.role !== 'Admin' && (
           <div className="d-flex gap-3">
             <button
-              onClick={() => eliminarUtilizador(user.id)}
+              onClick={() => eliminarUtilizador(user.id, user.role)}
               style={{
                 border: 'none',
                 background: 'transparent',
