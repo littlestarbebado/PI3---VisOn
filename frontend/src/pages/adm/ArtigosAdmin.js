@@ -10,7 +10,26 @@ export default function ArtigosAdmin() {
   const [erro, setErro] = useState('');
 
   const carregar = () => api.get('/artigos/admin').then(r => setArtigos(r.data || [])).catch(e => setErro(e.response?.data?.erro || 'Erro ao carregar artigos.'));
-  useEffect(carregar, []);
+  useEffect(() => {
+    let ativo = true;
+
+    const carregarInicial = async () => {
+      try {
+        const { data } = await api.get('/artigos/admin');
+        if (!ativo) return;
+        setArtigos(data || []);
+      } catch (error) {
+        if (!ativo) return;
+        setErro(error.response?.data?.erro || 'Erro ao carregar artigos.');
+      }
+    };
+
+    carregarInicial();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const guardar = async () => {
     if (!form.titulo.trim() || !form.conteudo.trim()) { setErro('Título e conteúdo são obrigatórios.'); return; }

@@ -9,13 +9,22 @@ export default function ServicosAdmin() {
   useEffect(() => {
     let ativo = true;
 
-    api.get('/conteudos/list').then(({ data }) => {
-      if (!ativo) return;
+    const carregar = async () => {
+      try {
+        const { data } = await api.get('/conteudos/list');
+        if (!ativo) return;
 
-      const item = data.find(conteudo => conteudo.chave === 'servicos_json');
-      setRegisto(item || null);
-      if (item) setServicos(JSON.parse(item.valor));
-    }).catch(error => setFeedback(error.response?.data?.erro || 'Erro ao carregar serviços.'));
+        const item = data.find(conteudo => conteudo.chave === 'servicos_json');
+        setRegisto(item || null);
+        if (item) setServicos(JSON.parse(item.valor));
+      } catch (error) {
+        if (!ativo) return;
+        setFeedback(error.response?.data?.erro || 'Erro ao carregar serviços.');
+      }
+    };
+
+    carregar();
+
     return () => {
       ativo = false;
     };

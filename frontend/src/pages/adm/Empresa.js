@@ -11,13 +11,22 @@ export default function Empresa() {
   useEffect(() => {
     let ativo = true;
 
-    api.get('/conteudos/list').then(({ data }) => {
-      if (!ativo) return;
+    const carregar = async () => {
+      try {
+        const { data } = await api.get('/conteudos/list');
+        if (!ativo) return;
 
-      const mapa = Object.fromEntries(data.map(item => [item.chave, item]));
-      setRegistos(mapa);
-      setDados(prev => ({ ...prev, ...Object.fromEntries(data.map(item => [item.chave, item.valor])) }));
-    }).catch(error => setFeedback(error.response?.data?.erro || 'Erro ao carregar conteúdos.'));
+        const mapa = Object.fromEntries(data.map(item => [item.chave, item]));
+        setRegistos(mapa);
+        setDados(prev => ({ ...prev, ...Object.fromEntries(data.map(item => [item.chave, item.valor])) }));
+      } catch (error) {
+        if (!ativo) return;
+        setFeedback(error.response?.data?.erro || 'Erro ao carregar conteúdos.');
+      }
+    };
+
+    carregar();
+
     return () => {
       ativo = false;
     };
