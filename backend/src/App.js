@@ -2,20 +2,28 @@ const express = require('express');
 const cors = require('cors'); 
 const app = express();
 
-// 1. IMPORTAR AS ROTAS (Fica no topo, junto aos outros 'require')
+// ==========================================
+// 1. TOP0: Onde ficam todos os 'require'
+// ==========================================
 const dashboardRoutes = require('./routes/dashboardRoute');
-const documentRoutes = require('./routes/documentRoute'); // <-- ADICIONA ESTA LINHA AQUI!
+const documentRoutes = require('./routes/documentRoute');
+const incidentRoutes = require('./routes/incidentRoute'); // <-- ESTA É A NOVA LINHA DO TOPO!
 
 app.set('port', process.env.PORT || 3000);
 
 app.use(cors()); 
 app.use(express.json());
 
-// 2. USAR AS ROTAS (Fica aqui no meio, antes do app.listen)
+// ==========================================
+// 2. MEIO: Onde ativamos as rotas do projeto
+// ==========================================
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/documents', documentRoutes); // <-- ADICIONA ESTA LINHA AQUI!
+app.use('/api/documents', documentRoutes);
+app.use('/api/incidents', incidentRoutes); // <-- ESTA É A NOVA LINHA DO MEIO!
 
-// 3. ARRANCAR O SERVIDOR (Fica sempre no fim de tudo)
+// ==========================================
+// 3. FIM: Onde o servidor efetivamente arranca
+// ==========================================
 app.listen(app.get('port'), () => {
   console.log('Servidor a bombar na porta ' + app.get('port'));
 });
