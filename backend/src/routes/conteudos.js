@@ -1,19 +1,19 @@
 const router = require('express').Router();
 const { ConteudoInstitucional } = require('../models');
 const auth = require('../middlewares/auth');
+const { registrarLog } = require('../utils/logger');
 
-// GET /api/conteudos — público, retorna todos os conteúdos
+// GET /api/conteudos — público
 router.get('/', async (req, res) => {
   try {
     const conteudos = await ConteudoInstitucional.findAll();
-    // Converte para objeto { chave: valor }
     const mapa = {};
     conteudos.forEach(c => { mapa[c.chave] = c.valor; });
     res.json(mapa);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// GET /api/conteudos/list — admin: lista completa com id, chave, secao
+// GET /api/conteudos/list — admin
 router.get('/list', auth, async (req, res) => {
   try {
     const conteudos = await ConteudoInstitucional.findAll({ order: [['secao', 'ASC'], ['chave', 'ASC']] });
@@ -21,25 +21,31 @@ router.get('/list', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// PUT /api/conteudos/:id — admin: atualiza um conteúdo
+// PUT /api/conteudos/:id — admin
 router.put('/:id', auth, async (req, res) => {
   try {
     const c = await ConteudoInstitucional.findByPk(req.params.id);
     if (!c) return res.status(404).json({ erro: 'Não encontrado' });
     await c.update({ valor: req.body.valor });
+
+    await registrarLog(req.user.email, 'Editar Conteudo', `Conteúdo editado: chave "${c.chave}" (secção: ${c.secao})`);
+
     res.json(c);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// POST /api/conteudos — admin: criar novo conteúdo
+// POST /api/conteudos — admin
 router.post('/', auth, async (req, res) => {
   try {
     const c = await ConteudoInstitucional.create(req.body);
+
+    await registrarLog(req.user.email, 'Criar Conteudo', `Conteúdo criado: chave "${req.body.chave}" (secção: ${req.body.secao})`);
+
     res.status(201).json(c);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// POST /api/conteudos/seed — admin: seed inicial dos textos
+// POST /api/conteudos/seed — admin
 router.post('/seed', auth, async (req, res) => {
   const defaults = [
     { chave: 'hero_titulo', valor: 'Proteja o Futuro Digital da sua Organização', secao: 'hero' },
