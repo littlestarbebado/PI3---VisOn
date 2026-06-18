@@ -31,7 +31,13 @@ export default function AdminLayout() {
       name: 'Atividade',
       icon: 'bi-activity',
       path: '/admin/atividade'
-    }
+    },
+  
+    {
+  name: 'Mensagens',
+  icon: 'bi-envelope',
+  path: '/admin/contactos'
+     },
   ];
 
   return (

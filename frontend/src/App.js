@@ -14,6 +14,7 @@ import Login from './pages/public/Login';
 
 /* ADMIN */
 import AdminLayout from './layouts/AdminLayout';
+import ContactosAdmin from './pages/adm/Contactos';
 import Dashboard from './pages/adm/Dashboard';
 import Conteudos from './pages/adm/Conteudos';
 import Utilizadores from './pages/adm/Utilizadores';
@@ -47,6 +48,7 @@ export default function App() {
           {/* Admin */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="contactos" element={<ContactosAdmin />} />
             <Route path="conteudos" element={<Conteudos />} />
             <Route path="utilizadores" element={<Utilizadores />} />
             <Route path="documentos" element={<Documentos />} />
