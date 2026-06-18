@@ -1,103 +1,145 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function Documentation() {
-  const [docs, setDocs] = useState([]);
+export default function Documentos() {
+  const [documents, setDocuments] = useState([]);
   const [search, setSearch] = useState('');
+  
+  // Estados para o formulário de novos uploads
+  const [title, setTitle] = useState('');
+  const [tag, setTag] = useState('Geral');
+  const [clienteId, setClienteId] = useState(''); 
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  // Vai buscar os documentos da API ao carregar a página ou pesquisar
-  useEffect(() => {
+  // Função para ir buscar a lista de documentos à Base de Dados
+  const fetchDocuments = () => {
     axios.get(`http://localhost:3000/api/documents/list?search=${search}`)
       .then(res => {
-        if (res.data.success) setDocs(res.data.documents);
+        if (res.data.success) setDocuments(res.data.documents);
       })
-      .catch(err => console.error("Erro ao carregar documentos", err));
+      .catch(err => console.error("Erro ao carregar documentos:", err));
+  };
+
+  useEffect(() => {
+    fetchDocuments();
   }, [search]);
 
-  // Função auxiliar para dar a cor correta às Badges (etiquetas) da foto
-  const getTagStyle = (tag) => {
-    if (tag === 'Relatório') return { backgroundColor: '#e0f7fa', color: '#00acc1' };
-    if (tag === 'Documentação') return { backgroundColor: '#f3e5f5', color: '#8e24aa' };
-    return { backgroundColor: '#fce4ec', color: '#d81b60' }; // PentTest
+  // Enviar ficheiro (Geral ou direcionado a um Cliente específico)
+  const handleUpload = (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('tag', tag);
+    if (selectedFile) {
+      formData.append('file', selectedFile);
+    }
+
+    // Se preencheres o ID do Cliente, usa a rota: /clientes/:id/documentos
+    const url = clienteId.trim() 
+      ? `http://localhost:3000/api/documents/clientes/${clienteId}/documentos`
+      : 'http://localhost:3000/api/documents/upload';
+
+    axios.post(url, formData)
+      .then(res => {
+        alert(res.data.message);
+        setTitle('');
+        setClienteId('');
+        setSelectedFile(null);
+        fetchDocuments(); 
+      })
+      .catch(err => alert("Erro ao fazer upload do documento"));
+  };
+
+  // Remoção de documentos
+  const handleDelete = (id) => {
+    if (window.confirm("Tem a certeza que deseja eliminar este documento?")) {
+      axios.delete(`http://localhost:3000/api/documents/delete/${id}`)
+        .then(res => {
+          alert(res.data.message);
+          fetchDocuments(); 
+        })
+        .catch(err => alert("Erro ao eliminar o documento"));
+    }
+  };
+
+  // Download real de documentos
+  const handleDownload = (doc) => {
+    window.open(`http://localhost:3000/uploads/${doc.title}`, '_blank');
   };
 
   return (
-    <div className="container-fluid bg-light min-vh-100 p-0" style={{ fontFamily: 'sans-serif' }}>
-      {/* Barra de Topo */}
-      <div className="navbar navbar-dark bg-dark px-4 py-3 shadow-sm">
-        <span className="navbar-brand fw-bold fs-4">VIS <span className="badge bg-primary">ON</span></span>
+    <div className="container py-4">
+      
+      {/* CABEÇALHO DO TEU MÓDULO */}
+      <div className="mb-4 p-4 bg-dark text-white rounded shadow-sm">
+        <h2 className="fw-bold m-0">📂 Gestão de Documentos</h2>
+        <p className="text-muted small mb-0">Área de Trabalho — Gabriel</p>
       </div>
 
-      <div className="container py-4" style={{ maxWidth: '1000px' }}>
-        {/* Cabeçalho principal */}
-        <div className="mb-4">
-          <h1 className="fw-bold m-0 h2">Documentação</h1>
-          <p className="text-muted small">Consulte e descarregue documentos disponibilizados</p>
-        </div>
-
-        {/* Caixa de Pesquisa */}
-        <div className="card p-4 border-0 shadow-sm mb-4">
-          <label className="fw-semibold text-dark mb-2 small">Pesquisar Documentos</label>
-          <div className="input-group">
-            <span className="input-group-text bg-light border-end-0 text-muted">🔍</span>
-            <input 
-              type="text" 
-              className="form-control bg-light border-start-0 ps-1 small" 
-              placeholder="Pesquisar por nome..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ fontSize: '14px' }}
-            />
+      {/* FORMULÁRIO DE UPLOAD */}
+      <div className="card p-4 border-0 shadow-sm mb-4 bg-white">
+        <h5 className="fw-bold mb-3 h6 text-primary">➕ Carregar Novo Documento (Global ou Gestor para Cliente)</h5>
+        <form onSubmit={handleUpload}>
+          <div className="row g-3">
+            <div className="col-md-4">
+              <label className="form-label small fw-bold">Título do Documento</label>
+              <input type="text" className="form-control" placeholder="Ex: Relatório de Auditoria" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small fw-bold">ID do Cliente (Opcional)</label>
+              <input type="text" className="form-control" placeholder="Vazio = Documento Global" value={clienteId} onChange={(e) => setClienteId(e.target.value)} />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small fw-bold">Categoria (Tag)</label>
+              <select className="form-select" value={tag} onChange={(e) => setTag(e.target.value)}>
+                <option value="Geral">Geral</option>
+                <option value="Relatório">Relatório</option>
+                <option value="Contrato">Contrato</option>
+                <option value="Auditoria">Auditoria</option>
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small fw-bold">Ficheiro</label>
+              <input type="file" className="form-control" onChange={(e) => setSelectedFile(e.target.files[0])} required />
+            </div>
           </div>
-        </div>
+          <button type="submit" className="btn btn-primary btn-sm mt-3 fw-bold px-4">Fazer Upload</button>
+        </form>
+      </div>
 
-        {/* Bloco de Listagem de Documentos */}
-        <div className="card p-4 border-0 shadow-sm">
-          <h5 className="fw-bold text-dark mb-4 h6">Seus Documentos ({docs.length})</h5>
+      {/* BARRA DE PESQUISA */}
+      <div className="mb-3">
+        <input type="text" className="form-control shadow-sm" placeholder="🔍 Pesquisar documentos..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
 
-          <div className="d-flex flex-column gap-3">
-            {docs.map((doc) => (
-              <div 
-                key={doc.id} 
-                className="card p-3 border border-light-subtle rounded-3 d-flex flex-md-row justify-content-between align-items-md-center gap-3"
-                style={{ backgroundColor: '#fff' }}
-              >
-                {/* Lado Esquerdo: Ícone + Info */}
-                <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-3 d-flex align-items-center justify-content-center" style={{ width: '45px', height: '45px', backgroundColor: '#e8f0fe' }}>
-                    <span className="fs-5 text-primary">📄</span>
-                  </div>
-                  <div>
-                    <div className="d-flex flex-wrap align-items-center gap-2 mb-1">
-                      <h6 className="m-0 fw-bold text-dark" style={{ fontSize: '15px' }}>{doc.title}</h6>
-                      <span className="badge rounded-pill fw-medium px-2 py-1" style={getTagStyle(doc.tag)}>
-                        {doc.tag}
-                      </span>
-                    </div>
-                    <div className="text-muted" style={{ fontSize: '12px' }}>
-                      <span className="fw-semibold">{doc.type}</span> &nbsp;•&nbsp; {doc.size} &nbsp;•&nbsp; Carregado por {doc.uploadedBy} {doc.date}
-                    </div>
-                  </div>
+      {/* LISTAGEM DE DOCUMENTOS */}
+      <div className="card p-4 border-0 shadow-sm bg-white">
+        <h5 className="fw-bold mb-3 h6 text-secondary">Documentos no Sistema</h5>
+        
+        {documents.length === 0 ? (
+          <p className="text-muted small my-3">Nenhum documento encontrado.</p>
+        ) : (
+          <div className="d-flex flex-column gap-2">
+            {documents.map((doc) => (
+              <div key={doc.id} className="p-3 border rounded bg-light d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 className="m-0 fw-bold text-dark">
+                    {doc.title} 
+                    <span className="badge bg-secondary ms-2">{doc.tag}</span>
+                    {doc.clienteId && <span className="badge bg-info text-dark ms-2">Cliente ID: {doc.clienteId}</span>}
+                  </h6>
+                  <small className="text-muted">{doc.type} • {doc.size} • Enviado por: {doc.uploadedBy} em {doc.date}</small>
                 </div>
-
-                {/* Lado Direito: Botão Descarregar */}
-                <div className="text-end">
-                  <button className="btn btn-sm btn-light border px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1" style={{ fontSize: '13px' }}>
-                    📥 Descarregar
-                  </button>
+                <div className="d-flex gap-2">
+                  <button className="btn btn-sm btn-success" onClick={() => handleDownload(doc)}>📥 Download</button>
+                  <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(doc.id)}>🗑️ Apagar</button>
                 </div>
               </div>
             ))}
-
-            {docs.length === 0 && (
-              <div className="text-center text-muted py-4">Nenhum documento encontrado com esse nome.</div>
-            )}
           </div>
-        </div>
-
+        )}
       </div>
+
     </div>
   );
 }
-
-export default Documentation;
