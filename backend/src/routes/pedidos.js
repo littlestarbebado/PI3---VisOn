@@ -38,26 +38,19 @@ async function findPedidoForUser(req, res) {
   return pedido;
 }
 
-// POST /api/pedidos - cliente cria um novo pedido
+// POST /api/pedidos — cliente cria pedido (submissão)
 router.post('/', auth, requireRole(['Cliente']), async (req, res) => {
   try {
     const { titulo, descricao } = req.body;
-
     if (!titulo || !descricao) {
       return res.status(400).json({ erro: 'Titulo e descricao sao obrigatorios.' });
     }
 
-    const pedido = await Pedido.create({
-      titulo,
-      descricao,
-      ClienteId: req.user.id
-    });
+    const pedido = await Pedido.create({ titulo, descricao, ClienteId: req.user.id });
 
-    await MensagemPedido.create({
-      texto: descricao,
-      enviadoPor: 'Cliente',
-      PedidoId: pedido.id
-    });
+    await MensagemPedido.create({ texto: descricao, enviadoPor: 'Cliente', PedidoId: pedido.id });
+
+    await registrarLog(req.user.email, 'Submissao Pedido', `Cliente ${req.user.email} submeteu pedido: "${titulo}" (id: ${pedido.id})`);
 
     const pedidoCompleto = await Pedido.findByPk(pedido.id, {
       include: [
@@ -73,12 +66,11 @@ router.post('/', auth, requireRole(['Cliente']), async (req, res) => {
   }
 });
 
-// GET /api/pedidos - cliente ve os seus; gestor/admin ve todos ou filtra por clienteId
+// GET /api/pedidos
 router.get('/', auth, requireRole(['Cliente', 'Gestor', 'Admin']), async (req, res) => {
   try {
     const role = getRole(req);
     const where = {};
-
     if (role === 'Cliente') {
       where.ClienteId = req.user.id;
     } else if (req.query.clienteId) {
@@ -91,10 +83,7 @@ router.get('/', auth, requireRole(['Cliente', 'Gestor', 'Admin']), async (req, r
         { model: MensagemPedido, as: 'mensagens' },
         { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }
       ],
-      order: [
-        ['updatedAt', 'DESC'],
-        [{ model: MensagemPedido, as: 'mensagens' }, 'createdAt', 'ASC']
-      ]
+      order: [['updatedAt', 'DESC'], [{ model: MensagemPedido, as: 'mensagens' }, 'createdAt', 'ASC']]
     });
 
     res.json(pedidos);
@@ -104,7 +93,7 @@ router.get('/', auth, requireRole(['Cliente', 'Gestor', 'Admin']), async (req, r
   }
 });
 
-// POST /api/pedidos/:id/mensagens - envia mensagem no chat de um pedido
+// POST /api/pedidos/:id/mensagens
 router.post('/:id/mensagens', auth, requireRole(['Cliente', 'Gestor', 'Admin']), async (req, res) => {
   try {
     const { texto } = req.body;
@@ -114,11 +103,7 @@ router.post('/:id/mensagens', auth, requireRole(['Cliente', 'Gestor', 'Admin']),
     if (!pedido) return;
 
     const role = getRole(req);
-    const mensagem = await MensagemPedido.create({
-      texto,
-      enviadoPor: getEnviadoPor(role),
-      PedidoId: pedido.id
-    });
+    const mensagem = await MensagemPedido.create({ texto, enviadoPor: getEnviadoPor(role), PedidoId: pedido.id });
 
     await pedido.update({ updatedAt: new Date() });
     req.app.get('io')?.to(`pedido_${pedido.id}`).emit('receber_mensagem', mensagem);
@@ -129,7 +114,7 @@ router.post('/:id/mensagens', auth, requireRole(['Cliente', 'Gestor', 'Admin']),
   }
 });
 
-// PUT /api/pedidos/:id/estado - gestor/admin altera o estado
+// PUT /api/pedidos/:id/estado
 router.put('/:id/estado', auth, requireRole(['Gestor', 'Admin']), async (req, res) => {
   try {
     const { estado } = req.body;
@@ -141,11 +126,7 @@ router.put('/:id/estado', auth, requireRole(['Gestor', 'Admin']), async (req, re
     if (!pedido) return res.status(404).json({ erro: 'Pedido nao encontrado.' });
 
     await pedido.update({ estado });
-    await registrarLog(
-      req.user?.email || req.admin?.email,
-      'Alteracao de Estado',
-      `Pedido #${pedido.id} movido para ${estado}`
-    );
+    await registrarLog(req.user?.email || req.admin?.email, 'Alteracao de Estado', `Pedido #${pedido.id} movido para ${estado}`);
     res.json(pedido);
   } catch (error) {
     console.error('Erro ao atualizar estado do pedido:', error);

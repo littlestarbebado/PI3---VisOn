@@ -1,16 +1,20 @@
 const router = require('express').Router();
 const { MensagemContacto } = require('../models');
 const auth = require('../middlewares/auth');
+const { registrarLog } = require('../utils/logger');
 
-// POST /api/contacto — público
+// POST /api/contacto — público (submissão de contacto)
 router.post('/', async (req, res) => {
   try {
     const msg = await MensagemContacto.create(req.body);
+
+    await registrarLog(req.body.email || 'Público', 'Submissao Contacto', `Nova mensagem de contacto recebida de: ${req.body.nome || 'Desconhecido'} (${req.body.email || '-'})`);
+
     res.status(201).json({ mensagem: 'Mensagem enviada com sucesso!', id: msg.id });
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// GET /api/contacto — admin: todas as mensagens
+// GET /api/contacto — admin
 router.get('/', auth, async (req, res) => {
   try {
     const msgs = await MensagemContacto.findAll({ order: [['createdAt', 'DESC']] });
@@ -18,7 +22,7 @@ router.get('/', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// PUT /api/contacto/:id/lida — admin: marcar como lida
+// PUT /api/contacto/:id/lida — admin
 router.put('/:id/lida', auth, async (req, res) => {
   try {
     const msg = await MensagemContacto.findByPk(req.params.id);

@@ -46,6 +46,7 @@ app.use('/api/contacto', require('./src/routes/contacto'));
 app.use('/api/pedidos', require('./src/routes/pedidos'));
 app.use('/api/incidentes', require('./src/routes/incidentes'));
 app.use('/api/logs', require('./src/routes/logs'));
+app.use('/api/documentos', require('./src/routes/documentos'));
 
 // Sincronização da Base de Dados PostgreSQL
 const PORT = process.env.PORT || 5000;

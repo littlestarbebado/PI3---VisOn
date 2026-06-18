@@ -1,0 +1,88 @@
+const router = require('express').Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { Documento, Cliente } = require('../models');
+const auth = require('../middlewares/auth');
+const { requireRole } = auth;
+const { registrarLog } = require('../utils/logger');
+
+// Configuração de upload
+const uploadDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, unique + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const tipos = ['.pdf', '.doc', '.docx', '.xlsx', '.txt', '.png', '.jpg'];
+    if (tipos.includes(path.extname(file.originalname).toLowerCase())) cb(null, true);
+    else cb(new Error('Tipo de ficheiro não suportado.'));
+  }
+});
+
+// GET /api/documentos — Admin/Gestor: todos; Cliente: os seus
+router.get('/', auth, async (req, res) => {
+  try {
+    const role = req.user?.role;
+    const where = {};
+    if (role === 'Cliente') where.ClienteId = req.user.id;
+
+    const documentos = await Documento.findAll({
+      where,
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }],
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(documentos);
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+
+// POST /api/documentos — Admin/Gestor: carrega documento para um cliente
+router.post('/', auth, requireRole(['Admin', 'Gestor']), upload.single('ficheiro'), async (req, res) => {
+  try {
+    const { nome, descricao, ClienteId } = req.body;
+    if (!ClienteId) return res.status(400).json({ erro: 'ClienteId e obrigatorio.' });
+
+    const doc = await Documento.create({
+      nome: nome || req.file?.originalname || 'Documento',
+      tipo: req.file ? path.extname(req.file.originalname).replace('.', '').toUpperCase() : null,
+      caminho: req.file ? `/uploads/${req.file.filename}` : null,
+      descricao,
+      ClienteId
+    });
+
+    const cliente = await Cliente.findByPk(ClienteId, { attributes: ['email', 'nome'] });
+    await registrarLog(req.user.email, 'Criar Documento', `Documento "${doc.nome}" carregado para cliente ${cliente?.email || ClienteId}`);
+
+    res.status(201).json(doc);
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+
+// DELETE /api/documentos/:id — Admin/Gestor
+router.delete('/:id', auth, requireRole(['Admin', 'Gestor']), async (req, res) => {
+  try {
+    const doc = await Documento.findByPk(req.params.id);
+    if (!doc) return res.status(404).json({ erro: 'Documento nao encontrado.' });
+
+    // Apagar ficheiro físico se existir
+    if (doc.caminho) {
+      const ficheiro = path.join(__dirname, '../..', doc.caminho);
+      if (fs.existsSync(ficheiro)) fs.unlinkSync(ficheiro);
+    }
+
+    await registrarLog(req.user.email, 'Remover Documento', `Documento "${doc.nome}" eliminado (id: ${doc.id})`);
+
+    await doc.destroy();
+    res.json({ mensagem: 'Documento eliminado.' });
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+
+module.exports = router;
