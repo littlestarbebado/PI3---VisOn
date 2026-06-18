@@ -14,16 +14,12 @@ import Login from './pages/public/Login';
 
 /* ADMIN */
 import AdminLayout from './layouts/AdminLayout';
-
 import Dashboard from './pages/adm/Dashboard';
-import Empresa from './pages/adm/Empresa';
-import ServicosAdmin from './pages/adm/ServicosAdmin';
-import ArtigosAdmin from './pages/adm/ArtigosAdmin';
+import Conteudos from './pages/adm/Conteudos';
 import Utilizadores from './pages/adm/Utilizadores';
 import Documentos from './pages/adm/Documentos';
 import Atividade from './pages/adm/Atividade';
 import SuporteGeral from './pages/adm/SuporteGeral';
-import Conteudos from './pages/adm/Conteudos';
 
 /* GESTOR */
 import DashboardGestor from './pages/gestor/dashboardGestor';
@@ -38,10 +34,9 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-
         <Routes>
 
-          {/* PÚBLICO */}
+          {/* Público */}
           <Route path="/" element={<Home />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/servicos" element={<Servicos />} />
@@ -49,29 +44,26 @@ export default function App() {
           <Route path="/contactos" element={<Contactos />} />
           <Route path="/login" element={<Login />} />
 
-          {/* ADMIN */}
+          {/* Admin */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
-            <Route path="artigos" element={<ArtigosAdmin />} />
             <Route path="conteudos" element={<Conteudos />} />
-            <Route path="servicos" element={<ServicosAdmin />} />
             <Route path="utilizadores" element={<Utilizadores />} />
             <Route path="documentos" element={<Documentos />} />
             <Route path="atividade" element={<Atividade />} />
             <Route path="suporte" element={<SuporteGeral />} />
           </Route>
 
-          {/* GESTOR */}
+          {/* Gestor */}
           <Route path="/gestor" element={<DashboardGestor />} />
           <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
 
-          {/* CLIENTE */}
+          {/* Cliente */}
           <Route path="/cliente" element={<DashboardCliente />} />
           <Route path="/cliente/submissoes" element={<SubmissoesCliente />} />
           <Route path="/cliente/chat" element={<PedidosChat />} />
 
         </Routes>
-
       </BrowserRouter>
     </AuthProvider>
   );
