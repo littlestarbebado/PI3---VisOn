@@ -41,11 +41,14 @@ router.get('/', auth, async (req, res) => {
 
     const documentos = await Documento.findAll({
       where,
-      include: [{ model: Cliente, attributes: ['id', 'nome', 'email'] }],
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }],
       order: [['createdAt', 'DESC']]
     });
     res.json(documentos);
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+  } catch (e) {
+    console.error('Erro ao listar documentos:', e);
+    res.status(500).json({ erro: 'Erro interno ao listar documentos.' });
+  }
 });
 
 // POST /api/documentos/submeter — Cliente submete evidencia ou pen test

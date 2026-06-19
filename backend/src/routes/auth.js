@@ -87,6 +87,84 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// Gestão de utilizadores no painel de administração.
+router.get('/utilizadores', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const [equipa, clientes] = await Promise.all([
+      Admin.findAll({ attributes: { exclude: ['password'] }, order: [['nome', 'ASC']] }),
+      Cliente.findAll({ attributes: { exclude: ['password'] }, order: [['nome', 'ASC']] })
+    ]);
+
+    res.json([
+      ...equipa.map(utilizador => utilizadorPublico(utilizador, utilizador.role || 'Gestor')),
+      ...clientes.map(cliente => utilizadorPublico(cliente, 'Cliente'))
+    ]);
+  } catch (error) {
+    console.error('Erro ao listar utilizadores:', error);
+    res.status(500).json({ erro: 'Erro interno ao listar utilizadores.' });
+  }
+});
+
+router.post('/gestores', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const nome = String(req.body.nome || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const telefone = String(req.body.telefone || '').trim() || null;
+    const password = String(req.body.password || '');
+
+    if (!nome || !email || !password) {
+      return res.status(400).json({ erro: 'Nome, email e password sao obrigatorios.' });
+    }
+
+    const [adminExistente, clienteExistente] = await Promise.all([
+      Admin.findOne({ where: { email } }),
+      Cliente.findOne({ where: { email } })
+    ]);
+    if (adminExistente || clienteExistente) {
+      return res.status(409).json({ erro: 'Ja existe um utilizador com este email.' });
+    }
+
+    const gestor = await Admin.create({
+      nome,
+      email,
+      telefone,
+      password: await bcrypt.hash(password, 10),
+      role: 'Gestor',
+      ativo: true
+    });
+    await registrarLog(req.user.email, 'Criar Gestor', `Gestor criado: ${email}`);
+    res.status(201).json({ user: utilizadorPublico(gestor, 'Gestor') });
+  } catch (error) {
+    console.error('Erro ao criar gestor:', error);
+    res.status(500).json({ erro: 'Erro interno ao criar gestor.' });
+  }
+});
+
+router.delete('/utilizadores/:role/:id', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const role = String(req.params.role || '');
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ erro: 'Utilizador invalido.' });
+    if (!['Gestor', 'Cliente'].includes(role)) {
+      return res.status(403).json({ erro: 'Este tipo de utilizador nao pode ser removido.' });
+    }
+
+    const Model = role === 'Cliente' ? Cliente : Admin;
+    const utilizador = await Model.findByPk(id);
+    if (!utilizador || (role === 'Gestor' && utilizador.role !== 'Gestor')) {
+      return res.status(404).json({ erro: 'Utilizador nao encontrado.' });
+    }
+
+    const email = utilizador.email;
+    await utilizador.destroy();
+    await registrarLog(req.user.email, 'Remover Utilizador', `${role} removido: ${email}`);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Erro ao remover utilizador:', error);
+    res.status(500).json({ erro: 'Erro interno ao remover utilizador.' });
+  }
+});
+
 router.get('/stats', auth, async (req, res) => {
   try {
     const clientes = await Cliente.count();
