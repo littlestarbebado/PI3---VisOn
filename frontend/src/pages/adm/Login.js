@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import VisonLogo from '../../components/VisonLogo';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -39,7 +40,8 @@ const Login = () => {
     <div className="container mt-5" style={{ maxWidth: '400px' }}>
       <div className="card bg-dark text-white p-4 border-secondary shadow">
 
-        <h3 className="fw-bold text-center text-info mb-4">Entrar no VisOn</h3>
+        <div className="d-flex justify-content-center mb-3"><VisonLogo size="md" dark /></div>
+        <h3 className="fw-bold text-center text-info mb-4">Entrar</h3>
 
         {erro && (
           <div className="alert alert-danger small py-2">{erro}</div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import VisonLogo from '../components/VisonLogo';
 
 export default function AdminLayout() {
 
@@ -59,15 +60,17 @@ export default function AdminLayout() {
         }}
       >
 
-        <div
+        <Link
+          to="/admin"
+          aria-label="Ir para o dashboard"
           style={{
-            fontSize: '2rem',
-            fontWeight: 800,
-            marginBottom: '2rem'
+            display: 'inline-flex',
+            marginBottom: '2rem',
+            textDecoration: 'none'
           }}
         >
-          VIS
-        </div>
+          <VisonLogo size="md" dark />
+        </Link>
 
         <div className="d-flex flex-column gap-2">
 

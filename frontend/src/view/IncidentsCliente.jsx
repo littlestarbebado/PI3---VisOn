@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import VisonLogo from '../components/VisonLogo';
 
 function Incidents() {
   const [incidents, setIncidents] = useState([]);
@@ -39,7 +40,7 @@ function Incidents() {
     <div className="container-fluid bg-light min-vh-100 p-0" style={{ fontFamily: 'sans-serif' }}>
       {/* Barra de Topo */}
       <div className="navbar navbar-dark bg-dark px-4 py-3 shadow-sm">
-        <span className="navbar-brand fw-bold fs-4">VIS <span className="badge bg-primary">ON</span></span>
+        <VisonLogo size="sm" dark />
       </div>
 
       <div className="container py-4" style={{ maxWidth: '900px' }}>
