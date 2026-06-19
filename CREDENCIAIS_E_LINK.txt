@@ -1,0 +1,20 @@
+CyberBox Secur
+Projeto Integrado III
+
+Link da aplicação:
+https://pi-3-vis-on.vercel.app
+
+Credenciais de acesso:
+
+Administrador
+Email: admin@vison.pt
+Password: Admin@1234
+
+Gestor
+Email: gestor@vison.pt
+Password: Demo@1234
+
+Cliente
+Email: cliente@vison.pt
+Password: Demo@1234
+

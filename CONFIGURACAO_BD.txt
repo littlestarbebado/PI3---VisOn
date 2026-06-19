@@ -1,0 +1,23 @@
+Base de Dados:
+PostgreSQL
+
+Fornecedor:
+Neon PostgreSQL
+
+Configuração:
+A aplicação utiliza variáveis de ambiente para ligação à base de dados e autenticação.
+
+Variáveis utilizadas:
+DB_HOST
+DB_NAME
+DB_USER
+DB_PASS
+DB_PORT
+JWT_SECRET
+JWT_EXPIRES_IN
+
+Observações:
+- As credenciais reais de produção não são incluídas por motivos de segurança.
+- A base de dados encontra-se alojada remotamente na plataforma Neon.
+- O backend utiliza Sequelize ORM para comunicação com PostgreSQL.
+
