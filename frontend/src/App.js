@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ProfileMenu from './components/ProfileMenu';
 
 import './App.css';
 
@@ -50,6 +51,7 @@ export default function App() {
 
           {/* Admin */}
           <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
+<Route element={<ProfileMenu />}>
   <Route path="/admin" element={<AdminLayout />}>
     <Route index element={<Dashboard />} />
     <Route path="contactos" element={<ContactosAdmin />} />
@@ -59,22 +61,24 @@ export default function App() {
     <Route path="atividade" element={<Atividade />} />
     <Route path="suporte" element={<SuporteGeral />} />
   </Route>
-
-          
-
+</Route>
           </Route>
 
           {/* Gestor */}
           <Route element={<ProtectedRoute allowedRoles={['Gestor']} />}>
-            <Route path="/gestor" element={<DashboardGestor />} />
-            <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
+            <Route element={<ProfileMenu />}>
+              <Route path="/gestor" element={<DashboardGestor />} />
+              <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
+            </Route>
           </Route>
 
           {/* Cliente */}
           <Route element={<ProtectedRoute allowedRoles={['Cliente']} />}>
-            <Route path="/cliente" element={<DashboardCliente />} />
-            <Route path="/cliente/submissoes" element={<SubmissoesCliente />} />
-            <Route path="/cliente/chat" element={<PedidosChat />} />
+            <Route element={<ProfileMenu />}>
+              <Route path="/cliente" element={<DashboardCliente />} />
+              <Route path="/cliente/submissoes" element={<SubmissoesCliente />} />
+              <Route path="/cliente/chat" element={<PedidosChat />} />
+            </Route>
           </Route>
 
         </Routes>
