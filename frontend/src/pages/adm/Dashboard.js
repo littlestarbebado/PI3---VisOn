@@ -1,5 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip
+} from 'recharts';
+/*
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip
+} from 'recharts';
+*/
 
 const cardStyle = {
   background: '#ffffff',
@@ -101,6 +119,7 @@ export default function Dashboard() {
       bgIcon: '#fefce8'
     }
   ];
+ 
 
   if (loading) {
     return <div className="p-4 fw-bold" style={{ color: '#111827' }}>A carregar dados do servidor...</div>;
@@ -144,6 +163,71 @@ export default function Dashboard() {
             </div>
           </div>
         ))}
+
+                <div className="col-12">
+          <div
+            style={{
+              ...cardStyle,
+              padding: '1.5rem'
+            }}
+          >
+            <h3 style={sectionTitleStyle}>
+              Estatísticas do Sistema
+            </h3>
+
+            <div style={{ width: '100%', height: '300px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[
+  { nome: 'Clientes', valor: data.clientes },
+  { nome: 'Utilizadores', valor: data.utilizadores },
+  { nome: 'Documentos', valor: data.documentos },
+  { nome: 'Atividade', valor: data.atividade }
+]}
+                >
+                  <XAxis dataKey="nome" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="valor" fill="#2563eb" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+          </div>
+        </div>
+        {/*
+<div className="col-12">
+  <div
+    style={{
+      ...cardStyle,
+      padding: '1.5rem'
+    }}
+  >
+    <h3 style={sectionTitleStyle}>
+      Estatísticas do Sistema
+    </h3>
+
+    <div style={{ width: '100%', height: '300px' }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={[
+            { nome: 'Clientes', valor: data.clientes },
+            { nome: 'Utilizadores', valor: data.utilizadores },
+            { nome: 'Documentos', valor: data.documentos },
+            { nome: 'Atividade', valor: data.atividade }
+          ]}
+        >
+          <XAxis dataKey="nome" />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey="valor" fill="#2563eb" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+
+  </div>
+</div>
+*/}
 
         <div className="col-md-5">
           <div style={{ ...cardStyle, padding: '1.5rem', height: '100%' }}>

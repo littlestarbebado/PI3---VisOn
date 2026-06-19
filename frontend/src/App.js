@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import './App.css';
 
@@ -46,24 +47,33 @@ export default function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Admin */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="contactos" element={<ContactosAdmin />} />
-            <Route path="conteudos" element={<Conteudos />} />
-            <Route path="utilizadores" element={<Utilizadores />} />
-            <Route path="documentos" element={<Documentos />} />
-            <Route path="atividade" element={<Atividade />} />
-            <Route path="suporte" element={<SuporteGeral />} />
+          <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
+  <Route path="/admin" element={<AdminLayout />}>
+    <Route index element={<Dashboard />} />
+    <Route path="contactos" element={<ContactosAdmin />} />
+    <Route path="conteudos" element={<Conteudos />} />
+    <Route path="utilizadores" element={<Utilizadores />} />
+    <Route path="documentos" element={<Documentos />} />
+    <Route path="atividade" element={<Atividade />} />
+    <Route path="suporte" element={<SuporteGeral />} />
+  </Route>
+
+          
+
           </Route>
 
           {/* Gestor */}
-          <Route path="/gestor" element={<DashboardGestor />} />
-          <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
+          <Route element={<ProtectedRoute allowedRoles={['Gestor']} />}>
+            <Route path="/gestor" element={<DashboardGestor />} />
+            <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
+          </Route>
 
           {/* Cliente */}
-          <Route path="/cliente" element={<DashboardCliente />} />
-          <Route path="/cliente/submissoes" element={<SubmissoesCliente />} />
-          <Route path="/cliente/chat" element={<PedidosChat />} />
+          <Route element={<ProtectedRoute allowedRoles={['Cliente']} />}>
+            <Route path="/cliente" element={<DashboardCliente />} />
+            <Route path="/cliente/submissoes" element={<SubmissoesCliente />} />
+            <Route path="/cliente/chat" element={<PedidosChat />} />
+          </Route>
 
         </Routes>
       </BrowserRouter>

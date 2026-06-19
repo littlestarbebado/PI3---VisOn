@@ -89,9 +89,38 @@ async function ensureDefaultAdmin() {
   }
 }
 
+async function ensureDemoUsers() {
+  const bcrypt = require('bcryptjs');
+  const password = 'Demo@1234';
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const [gestor] = await Admin.findOrCreate({
+    where: { email: 'gestor@vison.pt' },
+    defaults: {
+      nome: 'Gestor Demonstração',
+      password: passwordHash,
+      role: 'Gestor',
+      ativo: true
+    }
+  });
+  await gestor.update({ password: passwordHash, role: 'Gestor', ativo: true });
+
+  const [cliente] = await Cliente.findOrCreate({
+    where: { email: 'cliente@vison.pt' },
+    defaults: {
+      nome: 'Empresa Demonstração',
+      password: passwordHash,
+      score: 75,
+      status: true
+    }
+  });
+  await cliente.update({ password: passwordHash, status: true });
+}
+
 module.exports = {
   sequelize,
   ensureDefaultAdmin,
+  ensureDemoUsers,
   Admin,
   ConteudoInstitucional,
   Artigo,

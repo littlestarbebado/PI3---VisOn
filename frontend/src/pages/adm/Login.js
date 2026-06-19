@@ -22,7 +22,7 @@ const Login = () => {
       const data = await login(email, password);
 
       // Redirecionar conforme o role do utilizador
-      const role = data?.admin?.role;
+      const role = data?.role;
       if (role === 'Gestor') {
         navigate('/gestor');
       } else {

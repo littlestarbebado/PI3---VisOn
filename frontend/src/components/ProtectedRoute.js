@@ -10,16 +10,15 @@ function getHomeForRole(role) {
 }
 
 export default function ProtectedRoute({ allowedRoles = [], children }) {
-  const { user, admin, role, loading } = useAuth();
+  const { user, role, loading, isAuthenticated } = useAuth();
   const location = useLocation();
-  const currentUser = user || admin;
-  const currentRole = role || currentUser?.role;
+  const currentRole = role || user?.role;
 
   if (loading) {
     return <div className="p-4 fw-bold">A verificar permissões...</div>;
   }
 
-  if (!currentUser) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

@@ -47,7 +47,7 @@ export default function DashboardCliente() {
               </p>
               <h5 style={{ color: '#ffffff', fontWeight: 800, margin: 0 }}>Pedidos de esclarecimento</h5>
             </div>
-            <Link to="/cliente/pedidos" className="btn btn-info text-dark fw-bold" style={{ borderRadius: '8px' }}>
+            <Link to="/cliente/chat" className="btn btn-info text-dark fw-bold" style={{ borderRadius: '8px' }}>
               Abrir Chat
             </Link>
           </div>

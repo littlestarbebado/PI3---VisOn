@@ -10,11 +10,19 @@ async function auth(req, res, next) {
     req.user = decoded;
     req.admin = decoded;
 
-    // Enforcement: verificar se o utilizador Admin/Gestor ainda está ativo
+    // Enforcement: verificar se o utilizador ainda esta ativo
     if (decoded.role === 'Admin' || decoded.role === 'Gestor') {
       const { Admin } = require('../models');
       const utilizador = await Admin.findByPk(decoded.id, { attributes: ['id', 'ativo'] });
       if (!utilizador || utilizador.ativo === false) {
+        return res.status(403).json({ erro: 'Conta suspensa. Acesso revogado.' });
+      }
+    }
+
+    if (decoded.role === 'Cliente') {
+      const { Cliente } = require('../models');
+      const cliente = await Cliente.findByPk(decoded.id, { attributes: ['id', 'status'] });
+      if (!cliente || cliente.status === false) {
         return res.status(403).json({ erro: 'Conta suspensa. Acesso revogado.' });
       }
     }
