@@ -6,21 +6,21 @@ import './ProfileMenu.css';
 
 const ROLE_MENUS = {
   Cliente: [
-    ['Dados da Conta', 'bi-person', '/cliente'],
+    ['Dados da Conta', 'bi-person', '/cliente/conta'],
     ['Documentos e Relatórios', 'bi-files', '/cliente'],
     ['Avaliação de Risco', 'bi-shield-check', '/cliente'],
     ['Estado NIS2', 'bi-clipboard2-check', '/cliente'],
     ['Pedidos e Suporte', 'bi-chat-left-text', '/cliente/chat']
   ],
   Gestor: [
-    ['Dados da Conta', 'bi-person', '/gestor'],
+    ['Dados da Conta', 'bi-person', '/gestor/conta'],
     ['Clientes', 'bi-buildings', '/gestor'],
     ['Documentos', 'bi-files', '/gestor'],
     ['Avaliações NIS2', 'bi-clipboard2-check', '/gestor'],
     ['Pedidos', 'bi-inbox', '/gestor']
   ],
   Admin: [
-    ['Dados da Conta', 'bi-person', '/admin'],
+    ['Dados da Conta', 'bi-person', '/admin/conta'],
     ['Utilizadores', 'bi-people', '/admin/utilizadores'],
     ['Conteúdos', 'bi-layout-text-window-reverse', '/admin/conteudos'],
     ['Documentos', 'bi-files', '/admin/documentos'],
@@ -45,6 +45,7 @@ export default function ProfileMenu() {
   const name = user?.nome || user?.name || (currentRole === 'Cliente' ? 'Empresa Cliente' : `Utilizador ${currentRole}`);
   const email = user?.email || 'Email não disponível';
   const items = ROLE_MENUS[currentRole] || ROLE_MENUS.Cliente;
+  const homePath = { Admin: '/admin', Gestor: '/gestor', Cliente: '/cliente' }[currentRole] || '/';
 
   useEffect(() => {
     const closeOnOutsideClick = event => {
@@ -72,7 +73,7 @@ export default function ProfileMenu() {
   return (
     <div className="authenticated-shell">
       <header className="account-bar">
-        <Link to={items[0][2]} className="account-bar__brand" aria-label="Ir para o painel principal">
+        <Link to={homePath} className="account-bar__brand" aria-label="Ir para o painel principal">
           <VisonLogo size="sm" />
         </Link>
 
@@ -103,12 +104,12 @@ export default function ProfileMenu() {
             </div>
 
             <div className="profile-menu__items">
-              {items.map(([label, icon, path], index) => (
+              {items.map(([label, icon, path]) => (
                 <Link
                   key={label}
                   to={path}
                   role="menuitem"
-                  className={`profile-menu__item ${index > 0 && location.pathname === path ? 'is-active' : ''}`}
+                  className={`profile-menu__item ${location.pathname === path ? 'is-active' : ''}`}
                 >
                   <i className={`bi ${icon}`} aria-hidden="true" />
                   <span>{label}</span>

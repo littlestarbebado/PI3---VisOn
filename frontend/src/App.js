@@ -33,6 +33,7 @@ import DetalhesCliente from './pages/gestor/DetalhesCliente';
 import DashboardCliente from './pages/cliente/DashboardCliente';
 import SubmissoesCliente from './pages/cliente/SubmissoesCliente';
 import PedidosChat from './pages/cliente/PedidosChat';
+import DadosConta from './pages/conta/DadosConta';
 
 export default function App() {
   return (
@@ -52,8 +53,9 @@ export default function App() {
           {/* Admin */}
           <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
 <Route element={<ProfileMenu />}>
-  <Route path="/admin" element={<AdminLayout />}>
-    <Route index element={<Dashboard />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="conta" element={<DadosConta />} />
     <Route path="contactos" element={<ContactosAdmin />} />
     <Route path="conteudos" element={<Conteudos />} />
     <Route path="utilizadores" element={<Utilizadores />} />
@@ -68,6 +70,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['Gestor']} />}>
             <Route element={<ProfileMenu />}>
               <Route path="/gestor" element={<DashboardGestor />} />
+              <Route path="/gestor/conta" element={<DadosConta />} />
               <Route path="/gestor/cliente/:id" element={<DetalhesCliente />} />
             </Route>
           </Route>
@@ -76,6 +79,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['Cliente']} />}>
             <Route element={<ProfileMenu />}>
               <Route path="/cliente" element={<DashboardCliente />} />
+              <Route path="/cliente/conta" element={<DadosConta />} />
               <Route path="/cliente/submissoes" element={<SubmissoesCliente />} />
               <Route path="/cliente/chat" element={<PedidosChat />} />
             </Route>
