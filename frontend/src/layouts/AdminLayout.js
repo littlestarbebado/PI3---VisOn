@@ -1,10 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import VisonLogo from '../components/VisonLogo';
 
 export default function AdminLayout() {
 
   const location = useLocation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => setDrawerOpen(false), [location.pathname]);
+
+  useEffect(() => {
+    if (!drawerOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = event => {
+      if (event.key === 'Escape') setDrawerOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [drawerOpen]);
+
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 901px)');
+    const closeOnDesktop = event => {
+      if (event.matches) setDrawerOpen(false);
+    };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
 
   const menu = [
     {
@@ -51,9 +79,29 @@ export default function AdminLayout() {
       }}
     >
 
+      <button
+        type="button"
+        className="admin-drawer-toggle"
+        onClick={() => setDrawerOpen(true)}
+        aria-label="Abrir menu de administração"
+        aria-controls="admin-navigation"
+        aria-expanded={drawerOpen}
+      >
+        <i className="bi bi-list" aria-hidden="true" />
+      </button>
+
+      <button
+        type="button"
+        className={`admin-drawer-overlay ${drawerOpen ? 'is-visible' : ''}`}
+        onClick={() => setDrawerOpen(false)}
+        aria-label="Fechar menu de administração"
+        tabIndex={drawerOpen ? 0 : -1}
+      />
+
       {/* SIDEBAR */}
       <aside
-        className="admin-shell__sidebar"
+        id="admin-navigation"
+        className={`admin-shell__sidebar ${drawerOpen ? 'is-open' : ''}`}
         style={{
           width: '240px',
           background: '#050b23',
@@ -61,6 +109,15 @@ export default function AdminLayout() {
           padding: '1.5rem 1rem'
         }}
       >
+
+        <button
+          type="button"
+          className="admin-drawer-close"
+          onClick={() => setDrawerOpen(false)}
+          aria-label="Fechar menu"
+        >
+          <i className="bi bi-x-lg" aria-hidden="true" />
+        </button>
 
         <Link
           to="/admin"
@@ -80,6 +137,7 @@ export default function AdminLayout() {
             <Link
               key={index}
               to={item.path}
+              onClick={() => setDrawerOpen(false)}
               className={`admin-shell__link ${location.pathname === item.path ? 'is-active' : ''}`}
               style={{
                 textDecoration: 'none',
