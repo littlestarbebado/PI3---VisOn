@@ -40,18 +40,32 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    console.log('A tentar login...');
-    const response = await api.post('/auth/login', { email, password });
-    console.log(response.data);
+  try {
+    console.log('A tentar login...', { email });
+
+    const response = await api.post('/auth/login', {
+      email,
+      password
+    });
+
+    console.log('SUCESSO:', response.data);
+
     const { token: newToken, user: authenticatedUser } = response.data;
 
     localStorage.setItem('vison_token', newToken);
     localStorage.setItem('vison_user', JSON.stringify(authenticatedUser));
+
     setToken(newToken);
     setUser(authenticatedUser);
 
     return authenticatedUser;
-  };
+
+  } catch (err) {
+    console.error('ERRO LOGIN:', err);
+    console.error('RESPONSE:', err.response);
+    throw err;
+  }
+};
 
   const logout = () => clearSession();
 

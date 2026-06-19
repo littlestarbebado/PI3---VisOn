@@ -41,7 +41,7 @@ router.get('/', auth, async (req, res) => {
 
     const documentos = await Documento.findAll({
       where,
-      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }],
+      include: [{ model: Cliente, attributes: ['id', 'nome', 'email'] }],
       order: [['createdAt', 'DESC']]
     });
     res.json(documentos);

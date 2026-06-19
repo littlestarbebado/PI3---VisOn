@@ -9,7 +9,7 @@ const { sequelize, ensureDefaultAdmin, ensureDemoUsers } = require('./src/models
 
 const app = express();
 const server = http.createServer(app);
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
 const corsOptions = {
   origin: FRONTEND_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
