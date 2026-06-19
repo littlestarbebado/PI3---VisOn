@@ -41,7 +41,7 @@
       "last 1 safari version"
     ]
   },
-  "description": "vison-project/ ├── backend/ ├── src/ └── package.json └── frontend/ ├── src/ └── package.json",
+  "description": "CyberBox Secur — plataforma SaaS de cibersegurança e conformidade NIS2",
   "main": "index.js",
   "devDependencies": {
     "react-scripts": "^5.0.1"

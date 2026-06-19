@@ -1,9 +1,9 @@
-# VisOn — Plataforma de Cibersegurança
+# CyberBox Secur — Plataforma de Cibersegurança
 
 ## Estrutura do Projeto
 
 ```
-vison-project/
+cyberbox-secur/
 ├── backend/          ← API Express + Sequelize (SQLite)
 │   ├── src/
 │   │   ├── models/   ← Admin, Artigo, ConteudoInstitucional, MensagemContacto
@@ -14,7 +14,7 @@ vison-project/
 │
 └── frontend/         ← React + Bootstrap 5
     ├── src/
-    │   ├── components/  ← Navbar, Footer, VisonLogo
+    │   ├── components/  ← Navbar, Footer, logótipo CyberBox
     │   ├── context/     ← AuthContext
     │   ├── services/    ← api.js (axios)
     │   ├── pages/
@@ -46,7 +46,7 @@ npm start
 
 ## Rotas Públicas
 - `/` — Página Inicial
-- `/sobre` — Sobre a VisOn (Missão, Visão, Valores)
+- `/sobre` — Sobre a CyberBox Secur (Missão, Visão, Valores)
 - `/servicos` — Serviços de Cibersegurança
 - `/artigos` — Notícias e Artigos
 - `/contactos` — Formulário de Contacto

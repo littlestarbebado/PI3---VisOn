@@ -13,7 +13,7 @@ export default function VisonLogo({ size = 'md', dark = false, className = '' })
   return (
     <img
       src={dark ? logoOnDark : logoOnLight}
-      alt="CyberBoxSecur"
+      alt="CyberBox Secur"
       className={className}
       width={dimensions.width}
       height={dimensions.height}

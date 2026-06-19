@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import api from '../../services/api';
+import { EmptyState } from '../../components/StatePanel';
+import { brandText } from '../../utils/brand';
 
 const CATEGORIAS = ['Regulamentação', 'Segurança Ofensiva', 'Governança', 'Incidentes', 'Boas Práticas', 'Tecnologia'];
 
@@ -52,14 +54,14 @@ export default function Artigos() {
                     <i className="bi bi-calendar3 me-1" />{destaque.dataPublicacao?.slice(0, 10)}
                   </span>
                   <span style={{ color: '#64748b', fontSize: '0.8rem' }}>
-                    <i className="bi bi-person me-1" />{destaque.autor || 'Redação VisOn'}
+                    <i className="bi bi-person me-1" />{destaque.autor || 'Redação CyberBox'}
                   </span>
                   {destaque.categoria && (
                     <span className={`artigo-tag ${tagClass(destaque.categoria)}`}>{destaque.categoria}</span>
                   )}
                 </div>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.5rem', color: '#0d1117', marginBottom: '0.75rem' }}>{destaque.titulo}</h2>
-                <p style={{ color: '#64748b', marginBottom: '1.2rem', fontSize: '0.92rem' }}>{destaque.resumo}</p>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.5rem', color: '#0d1117', marginBottom: '0.75rem' }}>{brandText(destaque.titulo)}</h2>
+                <p style={{ color: '#64748b', marginBottom: '1.2rem', fontSize: '0.92rem' }}>{brandText(destaque.resumo)}</p>
                 <Link to={`/artigos/${destaque.slug}`} className="btn-vison-dark" style={{ textDecoration: 'none', fontSize: '0.85rem' }}>Ler Artigo Completo</Link>
               </div>
             </div>
@@ -79,8 +81,8 @@ export default function Artigos() {
                           <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{a.dataPublicacao?.slice(0, 10)}</span>
                           {a.categoria && <span className={`artigo-tag ${tagClass(a.categoria)}`}>{a.categoria}</span>}
                         </div>
-                        <h6 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: '#0d1117', marginBottom: '0.4rem', fontSize: '0.95rem' }}>{a.titulo}</h6>
-                        <p style={{ color: '#64748b', fontSize: '0.83rem', marginBottom: '0.8rem' }}>{a.resumo}</p>
+                        <h6 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: '#0d1117', marginBottom: '0.4rem', fontSize: '0.95rem' }}>{brandText(a.titulo)}</h6>
+                        <p style={{ color: '#64748b', fontSize: '0.83rem', marginBottom: '0.8rem' }}>{brandText(a.resumo)}</p>
                         <div className="d-flex align-items-center justify-content-between">
                           <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}><i className="bi bi-person me-1" />{a.autor || 'Redação'}</span>
                           <Link to={`/artigos/${a.slug}`} style={{ color: '#3b82f6', fontSize: '0.83rem', fontWeight: 600, textDecoration: 'none' }}>Ler mais</Link>
@@ -92,6 +94,8 @@ export default function Artigos() {
               </div>
             </>
           )}
+
+          {!destaque && <EmptyState icon="bi-journal-text" title="Ainda não existem artigos" description="Novos conteúdos de cibersegurança serão publicados aqui." />}
 
           {/* CATEGORIAS */}
           <div className="mb-5">

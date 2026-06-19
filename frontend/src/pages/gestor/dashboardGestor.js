@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { EmptyState, LoadingState } from '../../components/StatePanel';
 
 const DashboardGestor = () => {
   const navigate = useNavigate();
@@ -87,13 +88,14 @@ const DashboardGestor = () => {
       });
   };
 
-  if (loading) return <div className="text-center text-white my-5">A ligar ao servidor...</div>;
+  if (loading) return <LoadingState label="A preparar a área de gestão CyberBox…" />;
 
   return (
-    <div className="container p-4 text-white min-vh-100" style={{ backgroundColor: '#0a0c14' }}>
+    <div className="container p-4 text-white min-vh-100 private-dashboard manager-dashboard" style={{ backgroundColor: '#0a0c14' }}>
 
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
+          <span className="private-page-eyebrow private-page-eyebrow--dark">CyberBox Secur · Gestão</span>
           <h1 className="fw-bold">Painel do Gestor</h1>
           <p className="text-muted">Gestão de clientes, ativos e documentação em tempo real.</p>
         </div>
@@ -106,6 +108,21 @@ const DashboardGestor = () => {
       </div>
 
       {erro && <div className="alert alert-danger">{erro}</div>}
+
+      <div className="row g-3 mb-4 manager-kpis">
+        {[
+          ['Clientes', clientes.length, 'bi-buildings', 'blue'],
+          ['Ativos', clientes.filter(cliente => cliente.status).length, 'bi-shield-check', 'green'],
+          ['A acompanhar', clientes.filter(cliente => !cliente.status).length, 'bi-exclamation-circle', 'amber']
+        ].map(([label, value, icon, tone]) => (
+          <div className="col-12 col-sm-4" key={label}>
+            <div className="manager-kpi">
+              <span className={`manager-kpi__icon manager-kpi__icon--${tone}`}><i className={`bi ${icon}`} /></span>
+              <div><strong>{value}</strong><small>{label}</small></div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* FORMULÁRIO DE INSERÇÃO */}
       {mostrarForm && (
@@ -238,9 +255,7 @@ const DashboardGestor = () => {
             <tbody>
               {clientes.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-4 text-muted">
-                    Nenhuma empresa registada. Crie a primeira!
-                  </td>
+                  <td colSpan="5"><EmptyState icon="bi-buildings" title="Nenhuma empresa registada" description="Adicione o primeiro cliente para começar a monitorização." /></td>
                 </tr>
               ) : (
                 // key usa o id real da base de dados

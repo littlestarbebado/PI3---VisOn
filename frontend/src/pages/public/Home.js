@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import api from '../../services/api';
+import { brandText } from '../../utils/brand';
 
 const STATS_DEFAULT = [
   { key: 'stat_clientes', num: '150+', label: 'Clientes Ativos', color: '', icon: 'bi-people' },
@@ -42,10 +43,10 @@ export default function Home() {
             <div className="col-lg-7">
               <div className="d-flex align-items-center gap-2 mb-3">
                 <span style={{ width: 8, height: 8, background: '#10b981', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 8px #10b981' }} />
-                <span style={{ color: '#10b981', fontSize: '0.82rem', fontWeight: 600 }}>Proteção 24/7 Ativa</span>
+                <span style={{ color: '#6ee7b7', fontSize: '0.82rem', fontWeight: 700 }}>CyberBox Secur · Proteção 24/7</span>
               </div>
-              <h1>{heroTitle}</h1>
-              <p>{heroSub}</p>
+              <h1>{brandText(heroTitle)}</h1>
+              <p>{brandText(heroSub)}</p>
               <div className="d-flex gap-3 flex-wrap">
                 <Link to="/contactos" className="btn-vison-primary" style={{ textDecoration: 'none' }}>
                   <i className="bi bi-chat-dots" /> Fale Connosco
@@ -88,8 +89,8 @@ export default function Home() {
               <div key={i} className="col-md-4">
                 <div className="vison-card h-100">
                   <div className={`icon-box ${s.color}`}><i className={`bi ${s.icon}`} /></div>
-                  <h5 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>{s.title || s.titulo}</h5>
-                  <p style={{ color: 'var(--vison-gray)', fontSize: '0.88rem', marginBottom: '1.2rem' }}>{s.desc || s.descricao}</p>
+                  <h5 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>{brandText(s.title || s.titulo)}</h5>
+                  <p style={{ color: 'var(--vison-gray)', fontSize: '0.88rem', marginBottom: '1.2rem' }}>{brandText(s.desc || s.descricao)}</p>
                   <Link to="/servicos" style={{ color: 'var(--vison-blue)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}>
                     Saber Mais →
                   </Link>

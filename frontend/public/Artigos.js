@@ -76,7 +76,7 @@ export default function Artigos() {
                   </span>
                   <span style={{ color: '#64748b', fontSize: '0.8rem' }}>
                     <i className="bi bi-person me-1" />
-                    {destaque.autor || 'Redação VisOn'}
+                    {destaque.autor || 'Redação CyberBox'}
                   </span>
                   {destaque.categoria && (
                     <span className={`artigo-tag ${tagClass(destaque.categoria)}`}>{destaque.categoria}</span>

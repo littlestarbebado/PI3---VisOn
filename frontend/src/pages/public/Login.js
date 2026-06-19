@@ -34,7 +34,7 @@ export default function Login() {
       {/* LOGO */}
       <div className="text-center mb-4">
         <VisonLogo size="lg" dark />
-        <p style={{ color: 'var(--vison-gray)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Portal de Acesso de Clientes</p>
+        <p style={{ color: 'var(--vison-gray)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Portal seguro CyberBox Secur</p>
       </div>
 
       <div className="login-card">

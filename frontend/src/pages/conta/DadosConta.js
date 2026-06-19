@@ -40,7 +40,7 @@ const EMPTY_STATS = [
 export default function DadosConta() {
   const { user, role, token, isAuthenticated } = useAuth();
   const currentRole = role || user?.role || 'Cliente';
-  const name = user?.nome || user?.name || 'Utilizador VIS ON';
+  const name = user?.nome || user?.name || 'Utilizador CyberBox';
   const [stats, setStats] = useState(EMPTY_STATS);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -112,7 +112,7 @@ export default function DadosConta() {
   return (
     <div className="account-page">
       <div className="account-page__container">
-        <div className="account-page__eyebrow">Definições da conta</div>
+        <div className="account-page__eyebrow">CyberBox Secur · Definições da conta</div>
         <h1>Dados da Conta</h1>
         <p className="account-page__intro">Consulte a sua informação, atividade e estado de segurança num só lugar.</p>
 

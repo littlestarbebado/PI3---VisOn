@@ -9,6 +9,7 @@ import {
   YAxis,
   Tooltip
 } from 'recharts';
+import { EmptyState, LoadingState } from '../../components/StatePanel';
 /*
 import {
   ResponsiveContainer,
@@ -133,16 +134,17 @@ export default function Dashboard() {
  
 
   if (loading) {
-    return <div className="p-4 fw-bold" style={{ color: '#111827' }}>A carregar dados do servidor...</div>;
+    return <LoadingState label="A preparar o dashboard CyberBox…" />;
   }
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className="private-dashboard admin-dashboard" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <span className="private-page-eyebrow">CyberBox Secur · Administração</span>
       <h2 style={{ fontWeight: 800, color: '#111827', marginBottom: '0.3rem', letterSpacing: '-0.025em' }}>
         Dashboard Administrador
       </h2>
       <p style={{ color: '#4b5563', marginBottom: '2.5rem', fontSize: '0.95rem' }}>
-        Visão geral do sistema em tempo real com dados do PostgreSQL.
+        Visão geral da operação, clientes e segurança em tempo real.
       </p>
 
       <div className="row g-4">
@@ -306,7 +308,7 @@ export default function Dashboard() {
                   </div>
                 ))
               ) : (
-                <p style={{ color: '#4b5563', margin: 0 }}>Ainda não existem clientes recentes para apresentar.</p>
+                <EmptyState icon="bi-buildings" title="Sem clientes recentes" description="Os novos clientes surgirão aqui." />
               )}
             </div>
           </div>
@@ -352,7 +354,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               )) : (
-                <p style={{ color: '#4b5563', margin: 0 }}>Ainda nao existem logs de atividade para apresentar.</p>
+                <EmptyState icon="bi-activity" title="Sem atividade recente" description="As ações da equipa surgirão nesta cronologia." />
               )}
             </div>
           </div>

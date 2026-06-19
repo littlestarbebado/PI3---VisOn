@@ -22,7 +22,7 @@ export default function Contactos() {
   };
 
   const INFO = [
-    { icon: 'bi-envelope', color: 'icon-blue', title: 'Email', lines: ['info@vison.pt', 'comercial@vison.pt'] },
+    { icon: 'bi-envelope', color: 'icon-blue', title: 'Email', lines: ['info@cyberboxsecur.pt', 'comercial@cyberboxsecur.pt'] },
     { icon: 'bi-telephone', color: 'icon-cyan', title: 'Telefone', lines: ['+351 210 123 456', '+351 960 000 000'] },
     { icon: 'bi-geo-alt', color: 'icon-purple', title: 'Morada', lines: ['Jugueiros, 123', '3500-000 Viseu', 'Portugal'] },
     { icon: 'bi-clock', color: 'icon-green', title: 'Horário de Atendimento', lines: ['Segunda a Sexta: 09:00 - 18:00', 'Sábado: 10:00 - 14:00', 'Domingo: Encerrado'] },
@@ -105,7 +105,7 @@ export default function Contactos() {
           <div className="mt-5">
             <div className="map-placeholder">
               <iframe
-                title="Localização VisOn"
+                title="Localização CyberBox Secur"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d48399.05820654638!2d-7.970060!3d40.656540!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd23393cbab8a7d3%3A0x500ef868479a0c0!2sViseu!5e0!3m2!1spt!2spt!4v1709899200000"
                 width="100%" height="260" style={{ border: 0 }} allowFullScreen loading="lazy"
               />

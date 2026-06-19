@@ -12,7 +12,7 @@ export default function Footer() {
             <div className="d-flex align-items-center gap-2 mb-2">
               <VisonLogo size="sm" dark />
             </div>
-            <p className="footer-tagline">Protegendo o futuro digital das organizações portuguesas.</p>
+            <p className="footer-tagline">Segurança, risco e conformidade numa única plataforma.</p>
           </div>
 
           {/* Links Rápidos */}
@@ -38,14 +38,14 @@ export default function Footer() {
           {/* Contacto */}
           <div className="col-12 col-md-3">
             <p className="footer-heading">Contacto</p>
-            <div className="footer-contact-item"><i className="bi bi-envelope" /><span>info@cybersec.pt</span></div>
+            <div className="footer-contact-item"><i className="bi bi-envelope" /><span>info@cyberboxsecur.pt</span></div>
             <div className="footer-contact-item"><i className="bi bi-telephone" /><span>+351 210 123 456</span></div>
             <div className="footer-contact-item"><i className="bi bi-geo-alt" /><span>Viseu, Portugal</span></div>
           </div>
         </div>
 
         <hr className="footer-divider" />
-        <p className="footer-copy">© 2024 CyberSec Portugal. Todos os direitos reservados.</p>
+        <p className="footer-copy">© {new Date().getFullYear()} CyberBox Secur. Todos os direitos reservados.</p>
       </div>
     </footer>
   );

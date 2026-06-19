@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import api from '../../services/api';
+import { brandText } from '../../utils/brand';
 
 const SERVICOS_CARDS = [
   { icon: 'bi-cpu', color: 'icon-blue', title: 'Avaliação de Maturidade IT', desc: 'Análise completa do nível de maturidade da sua infraestrutura tecnológica e práticas de segurança.' },
@@ -44,8 +45,8 @@ export default function Servicos() {
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.transform = 'none'; }}>
                   <div className={`icon-box ${s.color} mb-3`}><i className={`bi ${s.icon}`} /></div>
-                  <h5 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', color: '#0d1117', marginBottom: '0.5rem' }}>{s.title || s.titulo}</h5>
-                  <p style={{ color: '#64748b', fontSize: '0.87rem', marginBottom: '1rem' }}>{s.desc || s.descricao}</p>
+                  <h5 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', color: '#0d1117', marginBottom: '0.5rem' }}>{brandText(s.title || s.titulo)}</h5>
+                  <p style={{ color: '#64748b', fontSize: '0.87rem', marginBottom: '1rem' }}>{brandText(s.desc || s.descricao)}</p>
                   <a href="#detalhes" style={{ color: '#3b82f6', fontSize: '0.83rem', fontWeight: 600, textDecoration: 'none' }}>Saber Mais →</a>
                 </div>
               </div>
@@ -59,12 +60,12 @@ export default function Servicos() {
         <div className="container">
           {servicos.map((d, i) => (
             <div key={i} className={`servico-detail ${i === 0 ? '' : ''}`} style={{ borderTop: i > 0 ? '1px solid var(--vison-border)' : 'none', paddingTop: i > 0 ? '2.5rem' : 0, marginTop: i > 0 ? '2.5rem' : 0 }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.4rem', marginBottom: '0.5rem' }}>{d.title || d.titulo}</h3>
-              <p style={{ color: 'var(--vison-gray)', marginBottom: '1rem', fontSize: '0.9rem' }}>{d.desc || d.descricao}</p>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.4rem', marginBottom: '0.5rem' }}>{brandText(d.title || d.titulo)}</h3>
+              <p style={{ color: 'var(--vison-gray)', marginBottom: '1rem', fontSize: '0.9rem' }}>{brandText(d.desc || d.descricao)}</p>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 {(d.items || []).map((item, j) => (
                   <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, color: '#cbd5e1', fontSize: '0.88rem', marginBottom: '0.4rem' }}>
-                    <span style={{ color: '#3b82f6', fontWeight: 700, marginTop: 1 }}>✓</span> {item}
+                    <span style={{ color: '#3b82f6', fontWeight: 700, marginTop: 1 }}>✓</span> {brandText(item)}
                   </li>
                 ))}
               </ul>

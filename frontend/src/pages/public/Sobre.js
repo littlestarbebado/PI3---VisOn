@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import api from '../../services/api';
+import { brandText } from '../../utils/brand';
 
 const VALORES = [
   { icon: 'bi-shield-check', color: 'icon-blue', title: 'Confiança', desc: 'Construímos relações baseadas na transparência e integridade.' },
@@ -34,7 +35,7 @@ export default function Sobre() {
       {/* PAGE HERO */}
       <section className="page-hero">
         <div className="container">
-          <h1>Sobre a <span style={{ color: 'var(--vison-blue)' }}>VisOn</span></h1>
+          <h1>Sobre a <span style={{ color: 'var(--vison-blue)' }}>CyberBox Secur</span></h1>
           <p>Parceiro de confiança na proteção do futuro digital das organizações portuguesas</p>
         </div>
       </section>
@@ -49,7 +50,7 @@ export default function Sobre() {
                 <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.4rem', color: '#0d1117', margin: 0 }}>Nossa Missão</h3>
               </div>
               <p style={{ color: '#374151', lineHeight: 1.7 }}>
-                {conteudos.missao_texto || 'Proteger organizações contra ameaças cibernéticas através de soluções inovadoras e personalizadas, garantindo a continuidade e segurança dos seus negócios.'}
+                {brandText(conteudos.missao_texto || 'Proteger organizações contra ameaças cibernéticas através de soluções inovadoras e personalizadas, garantindo a continuidade e segurança dos seus negócios.')}
               </p>
             </div>
             <div className="col-md-6">
@@ -58,7 +59,7 @@ export default function Sobre() {
                 <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.4rem', color: '#0d1117', margin: 0 }}>Nossa Visão</h3>
               </div>
               <p style={{ color: '#374151', lineHeight: 1.7 }}>
-                {conteudos.visao_texto || 'Ser a referência nacional em cibersegurança, reconhecida pela excelência técnica e pela confiança dos nossos clientes.'}
+                {brandText(conteudos.visao_texto || 'Ser a referência nacional em cibersegurança, reconhecida pela excelência técnica e pela confiança dos nossos clientes.')}
               </p>
             </div>
           </div>
@@ -77,8 +78,8 @@ export default function Sobre() {
               <div key={i} className="col-6 col-md-3">
                 <div className="vison-card h-100 text-center">
                   <div className={`icon-box ${v.color} mx-auto`}><i className={`bi ${v.icon}`} /></div>
-                  <h6 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: '#fff', marginBottom: '0.4rem' }}>{v.title}</h6>
-                  <p style={{ color: 'var(--vison-gray)', fontSize: '0.82rem', margin: 0 }}>{v.desc}</p>
+                  <h6 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: '#fff', marginBottom: '0.4rem' }}>{brandText(v.title)}</h6>
+                  <p style={{ color: 'var(--vison-gray)', fontSize: '0.82rem', margin: 0 }}>{brandText(v.desc)}</p>
                 </div>
               </div>
             ))}

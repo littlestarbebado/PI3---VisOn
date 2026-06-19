@@ -43,6 +43,7 @@ export default function AdminLayout() {
 
   return (
     <div
+      className="admin-shell"
       style={{
         display: 'flex',
         minHeight: '100vh',
@@ -52,6 +53,7 @@ export default function AdminLayout() {
 
       {/* SIDEBAR */}
       <aside
+        className="admin-shell__sidebar"
         style={{
           width: '240px',
           background: '#050b23',
@@ -72,12 +74,13 @@ export default function AdminLayout() {
           <VisonLogo size="md" dark />
         </Link>
 
-        <div className="d-flex flex-column gap-2">
+        <nav className="admin-shell__nav" aria-label="Navegação de administração">
 
           {menu.map((item, index) => (
             <Link
               key={index}
               to={item.path}
+              className={`admin-shell__link ${location.pathname === item.path ? 'is-active' : ''}`}
               style={{
                 textDecoration: 'none',
                 color:
@@ -102,12 +105,13 @@ export default function AdminLayout() {
             </Link>
           ))}
 
-        </div>
+        </nav>
 
       </aside>
 
       {/* CONTEÚDO */}
       <main
+        className="admin-shell__main"
         style={{
           flex: 1,
           padding: '2rem'

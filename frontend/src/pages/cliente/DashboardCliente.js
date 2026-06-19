@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { EmptyState, LoadingState } from '../../components/StatePanel';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 
@@ -52,13 +53,14 @@ export default function DashboardCliente() {
   }, []);
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', padding: '1rem' }}>
+    <div className="private-dashboard client-dashboard" style={{ fontFamily: 'Inter, sans-serif', padding: '1rem' }}>
+      <span className="private-page-eyebrow">CyberBox Secur · Área do Cliente</span>
       {/* Cabeçalho */}
       <h2 style={{ fontWeight: 800, color: '#111827', marginBottom: '0.3rem', letterSpacing: '-0.025em' }}>
         Painel da Empresa
       </h2>
       <p style={{ color: '#4b5563', marginBottom: '2.5rem', fontSize: '0.95rem' }}>
-        Bem-vindo, <strong style={{ color: '#2563eb' }}>{user?.nome || 'Empresa Cliente'}</strong>. Monitorize o seu estado de cibersegurança.
+        Bem-vindo à CyberBox, <strong style={{ color: '#2563eb' }}>{user?.nome || 'Empresa Cliente'}</strong>. Monitorize o seu estado de cibersegurança.
       </p>
 
       <div className="row g-4">
@@ -145,7 +147,9 @@ export default function DashboardCliente() {
             </p>
             
             {loading ? (
-              <p style={{ color: '#4b5563' }}>A carregar relatórios...</p>
+              <LoadingState compact label="A carregar relatórios…" />
+            ) : documentos.length === 0 ? (
+              <EmptyState icon="bi-file-earmark-text" title="Ainda não existem documentos" description="Os relatórios disponibilizados pela equipa aparecerão aqui." />
             ) : (
               <div className="table-responsive">
                 <table className="table table-hover align-middle" style={{ margin: 0 }}>
