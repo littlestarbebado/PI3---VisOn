@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 function Incidents() {
   const [incidents, setIncidents] = useState([]);
 
   // Função para carregar a lista do backend
   const fetchIncidents = () => {
-    axios.get('http://localhost:3000/api/incidents/list')
+    api.get('/incidentes')
       .then(res => {
-        if (res.data.success) setIncidents(res.data.incidents);
+        setIncidents(res.data || []);
       })
       .catch(err => console.error("Erro ao carregar incidentes", err));
   };
@@ -22,12 +22,15 @@ function Incidents() {
     const title = prompt("Digite a descrição/título do incidente:");
     if (!title) return; // Cancela se tiver vazio
 
-    axios.post('http://localhost:3000/api/incidents/create', { title })
+    api.post('/incidentes', {
+      tipo: 'Outro',
+      impacto: 'Medio',
+      dataOcorrencia: new Date().toISOString(),
+      descricao: title
+    })
       .then(res => {
-        if (res.data.success) {
-          alert("Incidente reportado com sucesso!");
-          fetchIncidents(); // Atualiza a lista automaticamente
-        }
+        alert("Incidente reportado com sucesso!");
+        fetchIncidents();
       })
       .catch(err => console.error("Erro ao criar incidente", err));
   };
@@ -73,8 +76,8 @@ function Incidents() {
                     <span className="fs-5 text-danger">⚠️</span>
                   </div>
                   <div>
-                    <h6 className="m-0 fw-bold text-dark mb-1" style={{ fontSize: '15px' }}>{inc.title}</h6>
-                    <small className="text-muted" style={{ fontSize: '12px' }}>{inc.date}</small>
+                    <h6 className="m-0 fw-bold text-dark mb-1" style={{ fontSize: '15px' }}>{inc.descricao}</h6>
+                    <small className="text-muted" style={{ fontSize: '12px' }}>{new Date(inc.dataOcorrencia).toLocaleString('pt-PT')}</small>
                   </div>
                 </div>
 
@@ -84,11 +87,11 @@ function Incidents() {
                     className="badge rounded-pill px-3 py-2 fw-semibold"
                     style={{ 
                       fontSize: '12px',
-                      backgroundColor: inc.status === 'Resolvido' ? '#e2f0d9' : '#fff3cd', 
-                      color: inc.status === 'Resolvido' ? '#385723' : '#856404'
+                      backgroundColor: inc.estado === 'Resolvido' ? '#e2f0d9' : '#fff3cd', 
+                      color: inc.estado === 'Resolvido' ? '#385723' : '#856404'
                     }}
                   >
-                    • {inc.status}
+                    • {inc.estado}
                   </span>
                 </div>
               </div>

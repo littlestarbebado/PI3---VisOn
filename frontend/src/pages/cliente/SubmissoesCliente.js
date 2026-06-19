@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
 const TIPOS_INCIDENTE = ['Phishing', 'Ransomware', 'Intrusao', 'Malware', 'Exfiltracao de Dados', 'DDoS', 'Fraude', 'Outro'];
@@ -7,8 +8,14 @@ const IMPACTOS = ['Baixo', 'Medio', 'Alto', 'Critico'];
 function estadoBadgeClass(estado) {
   if (estado === 'Pendente') return 'bg-danger';
   if (estado === 'Em Analise' || estado === 'Em Análise') return 'bg-primary';
-  if (estado === 'Resolvido') return 'bg-success';
+  if (estado === 'Resolvido' || estado === 'Concluido') return 'bg-success';
   return 'bg-secondary';
+}
+
+function categoriaLabel(categoria) {
+  if (categoria === 'Evidencia') return 'Evidência';
+  if (categoria === 'Documentacao') return 'Documentação';
+  return categoria;
 }
 
 function formatarData(valor) {
@@ -22,6 +29,14 @@ export default function SubmissoesCliente() {
   const [excelUploading, setExcelUploading] = useState(false);
   const [excelFeedback, setExcelFeedback] = useState('');
   const [excelErro, setExcelErro] = useState('');
+  const [documentos, setDocumentos] = useState([]);
+  const [documentoNome, setDocumentoNome] = useState('');
+  const [documentoDescricao, setDocumentoDescricao] = useState('');
+  const [documentoCategoria, setDocumentoCategoria] = useState('Evidencia');
+  const [documentoFicheiro, setDocumentoFicheiro] = useState(null);
+  const [documentoSubmitting, setDocumentoSubmitting] = useState(false);
+  const [documentoFeedback, setDocumentoFeedback] = useState('');
+  const [documentoErro, setDocumentoErro] = useState('');
   const [incidentes, setIncidentes] = useState([]);
   const [incidenteErro, setIncidenteErro] = useState('');
   const [incidenteFeedback, setIncidenteFeedback] = useState('');
@@ -50,9 +65,51 @@ export default function SubmissoesCliente() {
       .catch(() => setIncidenteErro('Nao foi possivel carregar os incidentes submetidos.'));
   };
 
+  const carregarDocumentos = () => {
+    api.get('/documentos')
+      .then(response => setDocumentos(
+        (response.data || []).filter(doc => ['Evidencia', 'Pen Test', 'Documentacao', 'Outros'].includes(doc.categoria))
+      ))
+      .catch(() => setDocumentoErro('Nao foi possivel carregar as submissoes.'));
+  };
+
   useEffect(() => {
     carregarIncidentes();
+    carregarDocumentos();
   }, []);
+
+  const submeterDocumento = async (event) => {
+    event.preventDefault();
+    setDocumentoErro('');
+    setDocumentoFeedback('');
+
+    if (!documentoFicheiro) {
+      setDocumentoErro('Selecione um ficheiro para submeter.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('ficheiro', documentoFicheiro);
+    formData.append('nome', documentoNome);
+    formData.append('descricao', documentoDescricao);
+    formData.append('categoria', documentoCategoria);
+
+    setDocumentoSubmitting(true);
+    try {
+      const response = await api.post('/documentos/submeter', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setDocumentos(prev => [response.data, ...prev]);
+      setDocumentoNome('');
+      setDocumentoDescricao('');
+      setDocumentoFicheiro(null);
+      setDocumentoFeedback(`${categoriaLabel(documentoCategoria)} submetida com sucesso.`);
+    } catch (error) {
+      setDocumentoErro(error.response?.data?.erro || 'Erro ao submeter o ficheiro.');
+    } finally {
+      setDocumentoSubmitting(false);
+    }
+  };
 
   const handleExcelUpload = async (event) => {
     const ficheiro = event.target.files?.[0];
@@ -122,12 +179,71 @@ export default function SubmissoesCliente() {
 
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', padding: '1rem' }}>
+      <div className="d-flex gap-2 mb-4">
+        <Link to="/cliente" className="btn btn-outline-secondary btn-sm">Dashboard</Link>
+        <Link to="/cliente/chat" className="btn btn-outline-secondary btn-sm">Pedidos</Link>
+      </div>
       <h2 style={{ fontWeight: 800, color: '#111827', marginBottom: '0.3rem' }}>
         Submissoes e Evidencias
       </h2>
       <p style={{ color: '#4b5563', marginBottom: '2.5rem', fontSize: '0.95rem' }}>
         Envie os seus ficheiros tecnicos e relatorios de incidentes para analise da equipa de gestao.
       </p>
+
+      <div className="card border-0 shadow-sm mb-4">
+        <div className="card-header bg-white fw-bold">Submeter ficheiro</div>
+        <form onSubmit={submeterDocumento} className="card-body row g-3">
+          <div className="col-md-3">
+            <label className="form-label small">Categoria</label>
+            <select className="form-select" value={documentoCategoria} onChange={event => setDocumentoCategoria(event.target.value)}>
+              <option value="Evidencia">Evidência</option>
+              <option value="Pen Test">Pen Test</option>
+              <option value="Documentacao">Documentação</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div className="col-md-4">
+            <label className="form-label small">Nome</label>
+            <input className="form-control" value={documentoNome} onChange={event => setDocumentoNome(event.target.value)} placeholder="Nome da submissão" />
+          </div>
+          <div className="col-md-5">
+            <label className="form-label small">Ficheiro</label>
+            <input type="file" className="form-control" onChange={event => setDocumentoFicheiro(event.target.files?.[0] || null)} />
+          </div>
+          <div className="col-12">
+            <label className="form-label small">Descrição</label>
+            <textarea className="form-control" rows="2" value={documentoDescricao} onChange={event => setDocumentoDescricao(event.target.value)} placeholder="Contexto para análise do gestor" />
+          </div>
+          {documentoErro && <div className="col-12"><div className="alert alert-danger py-2 mb-0">{documentoErro}</div></div>}
+          {documentoFeedback && <div className="col-12"><div className="alert alert-success py-2 mb-0">{documentoFeedback}</div></div>}
+          <div className="col-12">
+            <button type="submit" className="btn btn-primary" disabled={documentoSubmitting}>
+              {documentoSubmitting ? 'A submeter...' : 'Submeter para análise'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div className="card border-0 shadow-sm mb-4">
+        <div className="card-header bg-white fw-bold">Ficheiros submetidos</div>
+        <div className="table-responsive">
+          <table className="table table-hover mb-0 align-middle">
+            <thead><tr><th>Nome</th><th>Categoria</th><th>Data</th><th>Estado</th></tr></thead>
+            <tbody>
+              {documentos.length === 0 ? (
+                <tr><td colSpan="4" className="text-center text-muted py-4">Ainda não existem submissões.</td></tr>
+              ) : documentos.map(doc => (
+                <tr key={doc.id}>
+                  <td className="fw-semibold">{doc.nome}</td>
+                  <td>{categoriaLabel(doc.categoria)}</td>
+                  <td>{formatarData(doc.createdAt)}</td>
+                  <td><span className={`badge ${estadoBadgeClass(doc.estado)}`}>{doc.estado}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <div className="row g-4 mb-4">
         <div className="col-md-6">

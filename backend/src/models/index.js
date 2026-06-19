@@ -29,12 +29,14 @@ const Pedido = require('./Pedido')(sequelize);
 const MensagemPedido = require('./MensagemPedido')(sequelize);
 const Log = require('./Log')(sequelize);
 const Incidente = require('./Incidente')(sequelize);
+const NewsletterSubscription = require('./NewsletterSubscription')(sequelize);
+const NIS2Assessment = require('./NIS2Assessment')(sequelize);
 
 Cliente.hasMany(AtivoTecnologico, { foreignKey: 'ClienteId', as: 'ativos' });
 AtivoTecnologico.belongsTo(Cliente, { foreignKey: 'ClienteId' });
 
 Cliente.hasMany(Documento, { foreignKey: 'ClienteId', as: 'documentos' });
-Documento.belongsTo(Cliente, { foreignKey: 'ClienteId' });
+Documento.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
 
 Cliente.hasMany(Pedido, { foreignKey: 'ClienteId', as: 'pedidos' });
 Pedido.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
@@ -44,6 +46,9 @@ MensagemPedido.belongsTo(Pedido, { foreignKey: 'PedidoId', as: 'pedido' });
 
 Cliente.hasMany(Incidente, { foreignKey: 'ClienteId', as: 'incidentes' });
 Incidente.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
+
+Cliente.hasOne(NIS2Assessment, { foreignKey: 'ClienteId', as: 'avaliacaoNIS2' });
+NIS2Assessment.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
 
 async function ensureDefaultAdmin() {
   try {
@@ -131,5 +136,7 @@ module.exports = {
   Pedido,
   MensagemPedido,
   Log,
-  Incidente
+  Incidente,
+  NewsletterSubscription,
+  NIS2Assessment
 };

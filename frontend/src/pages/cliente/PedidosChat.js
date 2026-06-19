@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import socket from '../../services/socket';
 
@@ -113,6 +114,10 @@ export default function PedidosChat() {
 
   return (
     <div className="min-vh-100 p-4 text-white" style={{ background: '#080b12' }}>
+      <div className="d-flex gap-2 mb-4">
+        <Link to="/cliente" className="btn btn-outline-light btn-sm">Dashboard</Link>
+        <Link to="/cliente/submissoes" className="btn btn-outline-light btn-sm">Submissões</Link>
+      </div>
       <div className="d-flex justify-content-between align-items-start mb-4">
         <div>
           <h2 className="fw-bold mb-1">Pedidos de Esclarecimento</h2>

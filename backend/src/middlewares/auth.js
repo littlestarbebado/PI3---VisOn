@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
-const SECRET = process.env.JWT_SECRET || 'vison_secret_2024';
+const SECRET = process.env.JWT_SECRET
+  || (process.env.NODE_ENV === 'production' ? null : 'vison_secret_2024');
+if (!SECRET) throw new Error('JWT_SECRET e obrigatorio em producao.');
 
 async function auth(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];

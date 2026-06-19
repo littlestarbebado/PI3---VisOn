@@ -10,6 +10,7 @@ import Home from './pages/public/Home';
 import Sobre from './pages/public/Sobre';
 import Servicos from './pages/public/Servicos';
 import Artigos from './pages/public/Artigos';
+import ArtigoDetalhe from './pages/public/ArtigoDetalhe';
 import Contactos from './pages/public/Contactos';
 import Login from './pages/public/Login';
 
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/servicos" element={<Servicos />} />
           <Route path="/artigos" element={<Artigos />} />
+          <Route path="/artigos/:slug" element={<ArtigoDetalhe />} />
           <Route path="/contactos" element={<Contactos />} />
           <Route path="/login" element={<Login />} />
 

@@ -2,18 +2,18 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
 import socket from '../../services/socket';
 
-const ESTADOS_API = ['Pendente', 'Em AnÃ¡lise', 'ConcluÃ­do'];
+const ESTADOS_API = ['Pendente', 'Em Análise', 'Concluído'];
 
 const estadoLabels = {
   Pendente: 'Pendente',
-  'Em AnÃ¡lise': 'Em Analise',
-  'ConcluÃ­do': 'Concluido'
+  'Em Análise': 'Em Analise',
+  'Concluído': 'Concluido'
 };
 
 const estadoStyles = {
   Pendente: { background: '#fee2e2', color: '#991b1b', border: '#fecaca' },
-  'Em AnÃ¡lise': { background: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' },
-  'ConcluÃ­do': { background: '#dcfce7', color: '#166534', border: '#bbf7d0' }
+  'Em Análise': { background: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' },
+  'Concluído': { background: '#dcfce7', color: '#166534', border: '#bbf7d0' }
 };
 
 function formatarData(valor) {

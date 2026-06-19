@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import {
   ResponsiveContainer,
@@ -34,11 +35,11 @@ const sectionTitleStyle = {
 };
 
 const quickActions = [
-  { label: 'Gerir Conteúdos', icon: 'bi-file-text' },
-  { label: 'Criar Novo Utilizador', icon: 'bi-person-plus' },
-  { label: 'Gerir Documentos', icon: 'bi-folder' },
-  { label: 'Ver Logs de Atividade', icon: 'bi-clock-history' },
-  { label: 'Abrir Suporte / Chat', icon: 'bi-chat-dots' }
+  { label: 'Gerir Conteúdos', icon: 'bi-file-text', path: '/admin/conteudos' },
+  { label: 'Criar Novo Utilizador', icon: 'bi-person-plus', path: '/admin/utilizadores' },
+  { label: 'Gerir Documentos', icon: 'bi-folder', path: '/admin/documentos' },
+  { label: 'Ver Logs de Atividade', icon: 'bi-clock-history', path: '/admin/atividade' },
+  { label: 'Abrir Suporte / Chat', icon: 'bi-chat-dots', path: '/admin/suporte' }
 ];
 
 function formatarData(valor) {
@@ -54,10 +55,12 @@ function formatarData(valor) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [data, setData] = useState({
     clientes: 0,
     utilizadores: 0,
     documentos: 0,
+    nis2Avaliacoes: 0,
     atividade: 0,
     clientesRecentes: []
   });
@@ -71,7 +74,8 @@ export default function Dashboard() {
           clientes: res.data.clientes || 0,
           utilizadores: res.data.utilizadores || 0,
           documentos: res.data.documentos || 0,
-          atividade: res.data.atividade || 0,
+          nis2Avaliacoes: res.data.nis2Avaliacoes || 0,
+          atividade: res.data.atividadeHoje ?? res.data.atividade ?? 0,
           clientesRecentes: res.data.clientesRecentes || []
         });
         setLoading(false);
@@ -110,6 +114,13 @@ export default function Dashboard() {
       icon: 'bi-file-earmark-text',
       color: '#dc2626',
       bgIcon: '#fef2f2'
+    },
+    {
+      title: 'Avaliações NIS2',
+      value: data.nis2Avaliacoes,
+      icon: 'bi-clipboard2-check',
+      color: '#7c3aed',
+      bgIcon: '#f5f3ff'
     },
     {
       title: 'Atividade (Hoje)',
@@ -235,6 +246,7 @@ export default function Dashboard() {
             <div className="d-flex flex-column gap-3">
               {quickActions.map((action) => (
                 <button
+                  onClick={() => navigate(action.path)}
                   key={action.label}
                   type="button"
                   className="btn d-flex align-items-center text-start"

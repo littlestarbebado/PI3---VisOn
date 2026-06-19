@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { MensagemContacto } = require('../models');
 const auth = require('../middlewares/auth');
+const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
 
 // POST /api/contacto — público (submissão de contacto)
@@ -15,7 +16,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/contacto — admin
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const msgs = await MensagemContacto.findAll({ order: [['createdAt', 'DESC']] });
     res.json(msgs);
@@ -23,7 +24,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // PUT /api/contacto/:id/lida — admin
-router.put('/:id/lida', auth, async (req, res) => {
+router.put('/:id/lida', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const msg = await MensagemContacto.findByPk(req.params.id);
     if (!msg) return res.status(404).json({ erro: 'Não encontrada' });
@@ -33,7 +34,7 @@ router.put('/:id/lida', auth, async (req, res) => {
 });
 
 // DELETE /api/contacto/:id — admin
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireRole(['Admin']), async (req, res) => {
   try {
     await MensagemContacto.destroy({ where: { id: req.params.id } });
     res.json({ mensagem: 'Eliminada' });

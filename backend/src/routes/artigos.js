@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Artigo } = require('../models');
+const { Artigo, NewsletterSubscription } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
     const artigos = await Artigo.findAll({
       where: { publicado: true },
       order: [['dataPublicacao', 'DESC']],
-      attributes: ['id', 'titulo', 'resumo', 'imagem', 'slug', 'dataPublicacao']
+      attributes: ['id', 'titulo', 'resumo', 'imagem', 'slug', 'dataPublicacao', 'autor', 'categoria']
     });
     res.json(artigos);
   } catch (e) { res.status(500).json({ erro: e.message }); }
@@ -22,6 +22,19 @@ router.get('/admin', auth, requireRole(['Admin']), async (req, res) => {
     const artigos = await Artigo.findAll({ order: [['createdAt', 'DESC']] });
     res.json(artigos);
   } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+
+router.post('/newsletter', async (req, res) => {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ erro: 'Email invalido.' });
+    }
+    await NewsletterSubscription.findOrCreate({ where: { email } });
+    return res.status(201).json({ mensagem: 'Subscricao registada.' });
+  } catch (error) {
+    return res.status(500).json({ erro: 'Erro interno ao registar subscricao.' });
+  }
 });
 
 // GET /api/artigos/:slug — público

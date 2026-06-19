@@ -12,12 +12,6 @@ const TAG_MAP = {
   'Governança': 'tag-governanca',
 };
 
-const MOCK_ARTIGOS = [
-  { id: 1, titulo: 'NIS2: O que muda para as empresas portuguesas', resumo: 'A Diretiva NIS2 traz novas obrigações para empresas de setores essenciais e importantes. Saiba o que muda.', slug: 'nis2-portugal', dataPublicacao: '2024-03-15', categoria: 'Regulamentação', autor: 'Dr. António Silva', imagem: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
-  { id: 2, titulo: 'Como proteger a sua infraestrutura', resumo: 'Os testes de penetração são essenciais para identificar vulnerabilidades antes dos atacantes.', slug: 'proteger-infraestrutura', dataPublicacao: '2024-02-10', categoria: 'Segurança Ofensiva', autor: 'Eng. Maria Costa', imagem: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&q=80' },
-  { id: 3, titulo: 'Avaliação de Maturidade em Cibersegurança', resumo: 'Conheça os níveis de maturidade e como excluir a sua postura de segurança da sua organização.', slug: 'avaliacao-maturidade', dataPublicacao: '2024-01-05', categoria: 'Governança', autor: 'Dr. João Ferreira', imagem: 'https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=600&q=80' },
-];
-
 function tagClass(cat) { return TAG_MAP[cat] || 'tag-default'; }
 
 export default function Artigos() {
@@ -25,9 +19,10 @@ export default function Artigos() {
   const [catAtiva, setCatAtiva] = useState('');
   const [email, setEmail] = useState('');
   const [subOk, setSubOk] = useState(false);
+  const [subErro, setSubErro] = useState('');
 
   useEffect(() => {
-    api.get('/artigos').then(r => setArtigos(r.data.length ? r.data : MOCK_ARTIGOS)).catch(() => setArtigos(MOCK_ARTIGOS));
+    api.get('/artigos').then(r => setArtigos(r.data || [])).catch(() => setArtigos([]));
   }, []);
 
   const filtrados = catAtiva ? artigos.filter(a => a.categoria === catAtiva) : artigos;
@@ -118,9 +113,18 @@ export default function Artigos() {
             ) : (
               <div className="d-flex justify-content-center gap-2" style={{ maxWidth: 400, margin: '0 auto' }}>
                 <input type="email" placeholder="o seu email" value={email} onChange={e => setEmail(e.target.value)} style={{ flex: 1, padding: '0.6rem 1rem', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '0.88rem' }} />
-                <button onClick={() => { if (email) setSubOk(true); }} className="btn-vison-primary">Subscrever</button>
+                <button onClick={async () => {
+                  try {
+                    await api.post('/artigos/newsletter', { email });
+                    setSubOk(true);
+                    setSubErro('');
+                  } catch (error) {
+                    setSubErro(error.response?.data?.erro || 'Não foi possível subscrever.');
+                  }
+                }} className="btn-vison-primary">Subscrever</button>
               </div>
             )}
+            {subErro && <p style={{ color: '#f87171', marginTop: '0.75rem' }}>{subErro}</p>}
           </div>
 
         </div>

@@ -5,5 +5,7 @@ module.exports = (sequelize) => sequelize.define('Documento', {
   nome: { type: DataTypes.STRING, allowNull: false },
   tipo: { type: DataTypes.STRING },
   caminho: { type: DataTypes.STRING },
-  descricao: { type: DataTypes.TEXT }
+  descricao: { type: DataTypes.TEXT },
+  categoria: { type: DataTypes.STRING, defaultValue: 'Documento', allowNull: false },
+  estado: { type: DataTypes.STRING, defaultValue: 'Concluido', allowNull: false }
 });

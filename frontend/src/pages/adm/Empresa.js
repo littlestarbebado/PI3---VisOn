@@ -1,165 +1,58 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import api from '../../services/api';
+
+const CHAVES = ['missao_texto', 'visao_texto', 'valores_texto'];
 
 export default function Empresa() {
-  const [missao, setMissao] = useState('');
-  const [visao, setVisao] = useState('');
+  const [registos, setRegistos] = useState({});
+  const [dados, setDados] = useState({ missao_texto: '', visao_texto: '', valores_texto: '' });
+  const [feedback, setFeedback] = useState('');
 
-  const [valores, setValores] = useState([
-    'Confiança',
-    'Excelência',
-    'Inovação',
-    'Responsabilidade'
-  ]);
+  useEffect(() => {
+    let ativo = true;
 
-  const adicionarValor = () => {
-    setValores([...valores, '']);
+    const carregar = async () => {
+      try {
+        const { data } = await api.get('/conteudos/list');
+        if (!ativo) return;
+
+        const mapa = Object.fromEntries(data.map(item => [item.chave, item]));
+        setRegistos(mapa);
+        setDados(prev => ({ ...prev, ...Object.fromEntries(data.map(item => [item.chave, item.valor])) }));
+      } catch (error) {
+        if (!ativo) return;
+        setFeedback(error.response?.data?.erro || 'Erro ao carregar conteúdos.');
+      }
+    };
+
+    carregar();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const guardar = async () => {
+    try {
+      await Promise.all(CHAVES.map(chave => registos[chave]
+        ? api.put(`/conteudos/${registos[chave].id}`, { valor: dados[chave] })
+        : api.post('/conteudos', { chave, valor: dados[chave], secao: 'sobre' })
+      ));
+      setFeedback('Alterações guardadas.');
+    } catch (error) {
+      setFeedback(error.response?.data?.erro || 'Erro ao guardar conteúdos.');
+    }
   };
 
-  const alterarValor = (index, novoValor) => {
-    const novosValores = [...valores];
-    novosValores[index] = novoValor;
-    setValores(novosValores);
-  };
-
-  return (
-    <div
-      style={{
-        background: '#fff',
-        borderRadius: '12px',
-        padding: '2rem',
-        border: '1px solid #e5e7eb'
-      }}
-    >
-      <h3
-        style={{
-          color: '#111827',
-          fontWeight: '700',
-          marginBottom: '2rem'
-        }}
-      >
-        Informações da Empresa
-      </h3>
-
-      <div style={{ marginBottom: '2rem' }}>
-        <label
-          style={{
-            display: 'block',
-            color: '#111827',
-            fontWeight: '600',
-            marginBottom: '10px'
-          }}
-        >
-          Missão
-        </label>
-
-        <textarea
-          value={missao}
-          onChange={(e) => setMissao(e.target.value)}
-          rows={4}
-          style={{
-            width: '100%',
-            padding: '12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '8px'
-          }}
-        />
-      </div>
-
-      <div style={{ marginBottom: '2rem' }}>
-        <label
-          style={{
-            display: 'block',
-            color: '#111827',
-            fontWeight: '600',
-            marginBottom: '10px'
-          }}
-        >
-          Visão
-        </label>
-
-        <textarea
-          value={visao}
-          onChange={(e) => setVisao(e.target.value)}
-          rows={4}
-          style={{
-            width: '100%',
-            padding: '12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '8px'
-          }}
-        />
-      </div>
-
-      <div>
-        <label
-          style={{
-            display: 'block',
-            color: '#111827',
-            fontWeight: '600',
-            marginBottom: '15px'
-          }}
-        >
-          Valores
-        </label>
-
-        {valores.map((valor, index) => (
-          <div
-            key={index}
-            style={{
-              border: '1px solid #e5e7eb',
-              borderRadius: '10px',
-              padding: '16px',
-              marginBottom: '16px'
-            }}
-          >
-            <input
-              type="text"
-              value={valor}
-              onChange={(e) =>
-                alterarValor(index, e.target.value)
-              }
-              placeholder="Nome do valor"
-              style={{
-                width: '100%',
-                marginBottom: '10px',
-                padding: '10px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px'
-              }}
-            />
-
-            <textarea
-              rows={2}
-              placeholder="Descrição do valor"
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px'
-              }}
-            />
-          </div>
-        ))}
-
-        <button
-          type="button"
-          onClick={adicionarValor}
-          className="btn btn-light"
-          style={{
-            marginBottom: '20px'
-          }}
-        >
-          + Adicionar Valor
-        </button>
-      </div>
-
-      <br />
-
-      <button
-        className="btn btn-dark"
-      >
-        Guardar Alterações
-      </button>
-    </div>
-  );
+  return <div className="card p-4">
+    <h3 className="fw-bold mb-4">Informações da Empresa</h3>
+    <label className="fw-semibold mb-2">Missão</label>
+    <textarea className="form-control mb-3" rows="4" value={dados.missao_texto} onChange={e => setDados({ ...dados, missao_texto: e.target.value })} />
+    <label className="fw-semibold mb-2">Visão</label>
+    <textarea className="form-control mb-3" rows="4" value={dados.visao_texto} onChange={e => setDados({ ...dados, visao_texto: e.target.value })} />
+    <label className="fw-semibold mb-2">Valores</label>
+    <textarea className="form-control mb-3" rows="3" placeholder="Separados por vírgulas" value={dados.valores_texto} onChange={e => setDados({ ...dados, valores_texto: e.target.value })} />
+    {feedback && <div className="alert alert-info py-2">{feedback}</div>}
+    <button className="btn btn-dark align-self-start" onClick={guardar}>Guardar Alterações</button>
+  </div>;
 }
