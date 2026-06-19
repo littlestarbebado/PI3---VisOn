@@ -207,7 +207,7 @@ export default function SuporteGeral() {
           >
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
-                <thead style={{ background: '#050b23', color: '#fff' }}>
+                <thead className="admin-table-dark-head" style={{ background: '#050b23', color: '#fff' }}>
                   <tr>
                     <th className="ps-4 py-3">ID</th>
                     <th>Cliente</th>

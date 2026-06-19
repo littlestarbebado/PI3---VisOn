@@ -606,7 +606,28 @@ button, .btn, a { transition: color .16s ease, background-color .16s ease, borde
 .admin-shell__sidebar { position: sticky; top: 0; height: calc(100vh - 68px); overflow-y: auto; }
 .admin-shell__nav { display: flex; flex-direction: column; gap: .35rem; }
 .admin-shell__link.is-active { color: #fff !important; background: linear-gradient(90deg, rgba(37,99,235,.28), rgba(37,99,235,.12)) !important; box-shadow: inset 3px 0 #60a5fa; }
-.admin-shell__main { min-width: 0; }
+.admin-shell__main {
+  min-width: 0;
+  color: #0f172a;
+  background: #f3f4f6;
+}
+.admin-shell__main .text-muted,
+.admin-shell__main .text-secondary { color: #475569 !important; }
+.admin-shell__main :is(.card:not(.bg-dark), .list-group-item, .modal-content) {
+  color: #0f172a;
+}
+.admin-shell__main .card:not(.bg-dark) :is(h1, h2, h3, h4, h5, h6, strong),
+.admin-shell__main .card:not(.bg-dark) .card-header,
+.admin-shell__main .bg-white :is(h1, h2, h3, h4, h5, h6, strong) {
+  color: #0f172a;
+}
+.admin-shell__main .table:not(.table-dark) {
+  --bs-table-color: #0f172a;
+  --bs-table-striped-color: #0f172a;
+  --bs-table-hover-color: #0f172a;
+}
+.admin-shell__main .table:not(.table-dark) thead th { color: #334155; }
+.admin-shell__main .table .admin-table-dark-head th { color: #fff; }
 
 .manager-dashboard { max-width: none; border-radius: 0; }
 .manager-kpi { height: 100%; padding: 1rem 1.1rem; display: flex; align-items: center; gap: .9rem; background: linear-gradient(145deg, #131c2d, #101725); border: 1px solid #29364b; border-radius: var(--saas-radius); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
