@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { exportReportToPdf } from '../../utils/pdfExport';
 
@@ -31,6 +31,7 @@ function estadoNIS2Label(estado) {
 const DetalhesCliente = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [cliente, setCliente] = useState(null);
   const [ativos, setAtivos] = useState([]);
@@ -127,6 +128,14 @@ const DetalhesCliente = () => {
     carregarIncidentes();
     carregarNIS2();
   }, [carregarDetalhes, carregarPedidos, carregarIncidentes, carregarNIS2]);
+
+  useEffect(() => {
+    const targetPedidoId = location.state?.pedidoId;
+    if (targetPedidoId && pedidos.some(pedido => Number(pedido.id) === Number(targetPedidoId))) {
+      setAbaAtiva('pedidos');
+      setPedidoAtivoId(Number(targetPedidoId));
+    }
+  }, [location.state?.pedidoId, pedidos]);
 
   const pedidoAtivo = pedidos.find(pedido => pedido.id === pedidoAtivoId) || pedidos[0];
   const incidenteAtivo = incidentes.find(incidente => incidente.id === incidenteAtivoId) || incidentes[0];

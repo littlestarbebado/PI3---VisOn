@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import VisonLogo from './VisonLogo';
+import NotificationBell from './NotificationBell';
 import './ProfileMenu.css';
 
 const ROLE_MENUS = {
@@ -77,6 +78,9 @@ export default function ProfileMenu() {
           <VisonLogo size="sm" />
         </Link>
 
+        <div className="account-bar__actions">
+          <NotificationBell />
+
         <div className={`profile-menu ${open ? 'is-open' : ''}`} ref={menuRef}>
           <button
             type="button"
@@ -125,6 +129,7 @@ export default function ProfileMenu() {
               </button>
             </div>
           </div>
+        </div>
         </div>
       </header>
 

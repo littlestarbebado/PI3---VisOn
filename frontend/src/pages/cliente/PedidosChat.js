@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import socket from '../../services/socket';
 
@@ -14,6 +14,7 @@ function EstadoBadge({ estado }) {
 }
 
 export default function PedidosChat() {
+  const location = useLocation();
   const [pedidos, setPedidos] = useState([]);
   const [pedidoAtivoId, setPedidoAtivoId] = useState(null);
   const [titulo, setTitulo] = useState('');
@@ -61,6 +62,13 @@ export default function PedidosChat() {
   useEffect(() => {
     if (!pedidoAtivoId && pedidos.length > 0) setPedidoAtivoId(pedidos[0].id);
   }, [pedidoAtivoId, pedidos]);
+
+  useEffect(() => {
+    const targetPedidoId = location.state?.pedidoId;
+    if (targetPedidoId && pedidos.some(pedido => Number(pedido.id) === Number(targetPedidoId))) {
+      setPedidoAtivoId(Number(targetPedidoId));
+    }
+  }, [location.state?.pedidoId, pedidos]);
 
   useEffect(() => {
     if (!pedidoAtivo?.id) return undefined;

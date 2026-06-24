@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import socket from '../../services/socket';
 
@@ -56,6 +57,7 @@ function EstadoBadge({ estado }) {
 }
 
 export default function SuporteGeral() {
+  const location = useLocation();
   const [pedidos, setPedidos] = useState([]);
   const [pedidoAtivoId, setPedidoAtivoId] = useState(null);
   const [mensagem, setMensagem] = useState('');
@@ -104,6 +106,13 @@ export default function SuporteGeral() {
   useEffect(() => {
     carregarPedidos();
   }, []);
+
+  useEffect(() => {
+    const targetPedidoId = location.state?.pedidoId;
+    if (targetPedidoId && pedidos.some(pedido => Number(pedido.id) === Number(targetPedidoId))) {
+      setPedidoAtivoId(Number(targetPedidoId));
+    }
+  }, [location.state?.pedidoId, pedidos]);
 
   useEffect(() => {
     if (!pedidoAtivo?.id) return undefined;

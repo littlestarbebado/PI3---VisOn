@@ -48,7 +48,13 @@ router.post('/', auth, requireRole(['Cliente']), async (req, res) => {
 
     const pedido = await Pedido.create({ titulo, descricao, ClienteId: req.user.id });
 
-    await MensagemPedido.create({ texto: descricao, enviadoPor: 'Cliente', PedidoId: pedido.id });
+    await MensagemPedido.create({
+      texto: descricao,
+      enviadoPor: 'Cliente',
+      PedidoId: pedido.id,
+      lidaPorCliente: true,
+      lidaPorEquipa: false
+    });
 
     await registrarLog(req.user.email, 'Submissao Pedido', `Cliente ${req.user.email} submeteu pedido: "${titulo}" (id: ${pedido.id})`);
 
@@ -103,10 +109,18 @@ router.post('/:id/mensagens', auth, requireRole(['Cliente', 'Gestor', 'Admin']),
     if (!pedido) return;
 
     const role = getRole(req);
-    const mensagem = await MensagemPedido.create({ texto, enviadoPor: getEnviadoPor(role), PedidoId: pedido.id });
+    const enviadoPor = getEnviadoPor(role);
+    const mensagem = await MensagemPedido.create({
+      texto,
+      enviadoPor,
+      PedidoId: pedido.id,
+      lidaPorCliente: enviadoPor === 'Cliente',
+      lidaPorEquipa: enviadoPor !== 'Cliente'
+    });
 
     await pedido.update({ updatedAt: new Date() });
     req.app.get('io')?.to(`pedido_${pedido.id}`).emit('receber_mensagem', mensagem);
+    req.app.get('io')?.emit('notificacoes_atualizadas');
     res.status(201).json(mensagem);
   } catch (error) {
     console.error('Erro ao enviar mensagem:', error);
