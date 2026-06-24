@@ -20,4 +20,3 @@ Observações:
 - As credenciais reais de produção não são incluídas por motivos de segurança.
 - A base de dados encontra-se alojada remotamente na plataforma Neon.
 - O backend utiliza Sequelize ORM para comunicação com PostgreSQL.
-

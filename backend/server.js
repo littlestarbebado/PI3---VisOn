@@ -2,10 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
+const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
 require('dotenv').config();
 
-const { sequelize, ensureDefaultAdmin, ensureDemoUsers } = require('./src/models');
+const { sequelize, ensureDefaultAdmin, ensureDemoUsers, Pedido, Admin, Cliente } = require('./src/models');
 
 const app = express();
 const server = http.createServer(app);
@@ -21,12 +22,103 @@ const io = new Server(server, {
 
 app.set('io', io);
 
+const JWT_SECRET = process.env.JWT_SECRET
+  || (process.env.NODE_ENV === 'production' ? null : 'vison_secret_2024');
+if (!JWT_SECRET) throw new Error('JWT_SECRET e obrigatorio em producao.');
+
+function normalizarToken(token) {
+  if (!token || typeof token !== 'string') return null;
+  return token.replace(/^Bearer\s+/i, '').trim();
+}
+
+function extrairTokenSocket(socket, payload = {}) {
+  return normalizarToken(
+    payload.token
+    || socket.handshake.auth?.token
+    || socket.handshake.headers?.authorization
+  );
+}
+
+function normalizarPedidoPayload(payload) {
+  if (payload && typeof payload === 'object') return payload;
+  return { pedidoId: payload };
+}
+
+async function autenticarSocket(socket, payload = {}) {
+  const token = extrairTokenSocket(socket, payload);
+  if (!token) return null;
+
+  const decoded = jwt.verify(token, JWT_SECRET);
+
+  if (decoded.role === 'Admin' || decoded.role === 'Gestor') {
+    const utilizador = await Admin.findByPk(decoded.id, { attributes: ['id', 'ativo'] });
+    if (!utilizador || utilizador.ativo === false) return null;
+  }
+
+  if (decoded.role === 'Cliente') {
+    const cliente = await Cliente.findByPk(decoded.id, { attributes: ['id', 'status'] });
+    if (!cliente || cliente.status === false) return null;
+  }
+
+  return decoded;
+}
+
+async function podeEntrarNoPedido(user, pedidoId) {
+  const pedido = await Pedido.findByPk(pedidoId, { attributes: ['id', 'ClienteId'] });
+  if (!pedido) return { autorizado: false, codigo: 'PEDIDO_INDISPONIVEL' };
+
+  if (user.role === 'Cliente') {
+    return {
+      autorizado: Number(pedido.ClienteId) === Number(user.id),
+      codigo: 'ACESSO_NEGADO'
+    };
+  }
+
+  if (user.role === 'Admin' || user.role === 'Gestor') {
+    return { autorizado: true };
+  }
+
+  return { autorizado: false, codigo: 'ACESSO_NEGADO' };
+}
+
 io.on('connection', (socket) => {
-  socket.on('join_pedido', (pedidoId) => {
-    socket.join(`pedido_${pedidoId}`);
+  socket.on('join_pedido', async (payload, ack) => {
+    try {
+      const dados = normalizarPedidoPayload(payload);
+      const pedidoId = Number(dados.pedidoId);
+
+      if (!Number.isInteger(pedidoId) || pedidoId <= 0) {
+        socket.emit('pedido_socket_erro', { codigo: 'PEDIDO_INVALIDO', mensagem: 'Nao foi possivel abrir esta conversa.' });
+        if (typeof ack === 'function') ack({ ok: false });
+        return;
+      }
+
+      const user = await autenticarSocket(socket, dados);
+      if (!user) {
+        socket.emit('pedido_socket_erro', { codigo: 'NAO_AUTENTICADO', mensagem: 'Sessao invalida para abrir esta conversa.' });
+        if (typeof ack === 'function') ack({ ok: false });
+        return;
+      }
+
+      const permissao = await podeEntrarNoPedido(user, pedidoId);
+      if (!permissao.autorizado) {
+        socket.emit('pedido_socket_erro', { codigo: permissao.codigo, mensagem: 'Nao foi possivel abrir esta conversa.' });
+        if (typeof ack === 'function') ack({ ok: false });
+        return;
+      }
+
+      socket.join(`pedido_${pedidoId}`);
+      if (typeof ack === 'function') ack({ ok: true });
+    } catch (error) {
+      socket.emit('pedido_socket_erro', { codigo: 'ERRO_CONVERSA', mensagem: 'Nao foi possivel abrir esta conversa.' });
+      if (typeof ack === 'function') ack({ ok: false });
+    }
   });
 
-  socket.on('leave_pedido', (pedidoId) => {
+  socket.on('leave_pedido', (payload) => {
+    const dados = normalizarPedidoPayload(payload);
+    const pedidoId = Number(dados.pedidoId);
+    if (!Number.isInteger(pedidoId) || pedidoId <= 0) return;
     socket.leave(`pedido_${pedidoId}`);
   });
 });

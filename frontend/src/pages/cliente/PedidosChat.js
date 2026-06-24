@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../../services/api';
-import socket from '../../services/socket';
+import socket, { getPedidoJoinPayload } from '../../services/socket';
 
 const estados = {
   Pendente: 'bg-danger',
@@ -73,17 +73,22 @@ export default function PedidosChat() {
   useEffect(() => {
     if (!pedidoAtivo?.id) return undefined;
 
-    socket.emit('join_pedido', pedidoAtivo.id);
+    socket.emit('join_pedido', getPedidoJoinPayload(pedidoAtivo.id));
 
     const receberMensagem = (novaMensagem) => {
       adicionarMensagemPedido(novaMensagem.PedidoId || pedidoAtivo.id, novaMensagem);
     };
+    const tratarErroSocket = erro => {
+      console.warn(erro?.mensagem || 'Nao foi possivel abrir esta conversa.');
+    };
 
     socket.on('receber_mensagem', receberMensagem);
+    socket.on('pedido_socket_erro', tratarErroSocket);
 
     return () => {
       socket.off('receber_mensagem', receberMensagem);
-      socket.emit('leave_pedido', pedidoAtivo.id);
+      socket.off('pedido_socket_erro', tratarErroSocket);
+      socket.emit('leave_pedido', { pedidoId: pedidoAtivo.id });
     };
   }, [adicionarMensagemPedido, pedidoAtivo?.id]);
 

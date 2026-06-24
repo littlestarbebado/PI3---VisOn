@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
+import socket, { refreshSocketAuth } from '../services/socket';
 
 const AuthContext = createContext(null);
 
@@ -14,6 +15,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('vison_admin');
     setToken(null);
     setUser(null);
+    socket.disconnect();
   };
 
   useEffect(() => {
@@ -29,6 +31,7 @@ export function AuthProvider({ children }) {
         setUser(response.data.user);
         setToken(savedToken);
         localStorage.setItem('vison_user', JSON.stringify(response.data.user));
+        refreshSocketAuth();
       } catch {
         clearSession();
       } finally {
@@ -57,6 +60,7 @@ export function AuthProvider({ children }) {
 
     setToken(newToken);
     setUser(authenticatedUser);
+    refreshSocketAuth();
 
     return authenticatedUser;
 
