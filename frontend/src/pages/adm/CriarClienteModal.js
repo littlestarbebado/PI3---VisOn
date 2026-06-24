@@ -74,14 +74,15 @@ export default function CriarClienteModal({ show, onClose }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        padding: '12px',
         zIndex: 999
       }}
     >
 
       <div
         style={{
-          width: '520px',
-          maxHeight: '90vh',
+          width: 'min(520px, calc(100vw - 24px))',
+          maxHeight: 'calc(100dvh - 24px)',
           overflowY: 'auto',
           background: '#fff',
           borderRadius: '14px',

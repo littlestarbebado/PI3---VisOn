@@ -177,7 +177,7 @@ export default function PedidosChat() {
         </div>
 
         <div className="col-lg-8">
-          <div className="card bg-dark border-secondary h-100" style={{ minHeight: 620 }}>
+          <div className="card bg-dark border-secondary h-100 mobile-chat-card">
             {pedidoAtivo ? (
               <>
                 <div className="card-header border-secondary d-flex justify-content-between align-items-center">
@@ -187,12 +187,12 @@ export default function PedidosChat() {
                   </div>
                   <EstadoBadge estado={pedidoAtivo.estado} />
                 </div>
-                <div className="card-body d-flex flex-column" style={{ height: 500, overflowY: 'auto', background: '#101522' }}>
+                <div className="card-body d-flex flex-column mobile-chat-messages" style={{ background: '#101522' }}>
                   {(pedidoAtivo.mensagens || []).map(msg => {
                     const minha = msg.enviadoPor === 'Cliente';
                     return (
                       <div key={msg.id} className={`d-flex mb-3 ${minha ? 'justify-content-end' : 'justify-content-start'}`}>
-                        <div className={`p-3 rounded-3 ${minha ? 'bg-primary text-white' : 'bg-secondary text-white'}`} style={{ maxWidth: '72%' }}>
+                        <div className={`p-3 rounded-3 mobile-chat-bubble ${minha ? 'bg-primary text-white' : 'bg-secondary text-white'}`} style={{ maxWidth: '72%' }}>
                           <div className="small fw-bold mb-1">{msg.enviadoPor}</div>
                           <div>{msg.texto}</div>
                         </div>
@@ -200,7 +200,7 @@ export default function PedidosChat() {
                     );
                   })}
                 </div>
-                <form onSubmit={enviarMensagem} className="card-footer border-secondary d-flex gap-2">
+                <form onSubmit={enviarMensagem} className="card-footer border-secondary d-flex gap-2 mobile-chat-footer">
                   <input
                     className="form-control bg-secondary text-white border-0"
                     placeholder="Escrever mensagem..."

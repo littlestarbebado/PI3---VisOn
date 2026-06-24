@@ -87,6 +87,48 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+router.post('/change-password', auth, async (req, res) => {
+  try {
+    const role = req.user.role;
+    const currentPassword = String(req.body.currentPassword || '');
+    const newPassword = String(req.body.newPassword || '');
+    const confirmPassword = String(req.body.confirmPassword || '');
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ erro: 'Password atual, nova password e confirmacao sao obrigatorias.' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ erro: 'A confirmacao nao coincide com a nova password.' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ erro: 'A nova password deve ter pelo menos 8 caracteres.' });
+    }
+
+    const Model = role === 'Cliente' ? Cliente : Admin;
+    const utilizador = await Model.findByPk(req.user.id);
+
+    if (!utilizador) {
+      return res.status(404).json({ erro: 'Utilizador nao encontrado.' });
+    }
+
+    const passwordValida = await bcrypt.compare(currentPassword, utilizador.password || '');
+    if (!passwordValida) {
+      return res.status(401).json({ erro: 'A password atual esta incorreta.' });
+    }
+
+    utilizador.password = await bcrypt.hash(newPassword, 10);
+    await utilizador.save();
+
+    await registrarLog(req.user.email, 'Alterar Password', `Password alterada para ${role}`);
+    return res.json({ mensagem: 'Password alterada com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao alterar password:', error);
+    return res.status(500).json({ erro: 'Erro interno ao alterar password.' });
+  }
+});
+
 // Gestão de utilizadores no painel de administração.
 router.get('/utilizadores', auth, requireRole(['Admin']), async (req, res) => {
   try {

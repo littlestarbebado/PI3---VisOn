@@ -277,7 +277,7 @@ const DetalhesCliente = () => {
         </p>
       </div>
 
-      <ul className="nav nav-tabs border-secondary mb-4">
+      <ul className="nav nav-tabs border-secondary mb-4 manager-tabs-scroll">
         <li className="nav-item">
           <button
             className={`nav-link text-white border-0 ${abaAtiva === 'ativos' ? 'active bg-secondary fw-bold' : ''}`}
@@ -677,7 +677,7 @@ const DetalhesCliente = () => {
           </div>
 
           <div className="col-lg-8">
-            <div className="card bg-dark border-secondary" style={{ minHeight: 620 }}>
+            <div className="card bg-dark border-secondary mobile-chat-card">
               {pedidoAtivo ? (
                 <>
                   <div className="card-header border-secondary">
@@ -699,12 +699,12 @@ const DetalhesCliente = () => {
                     </div>
                   </div>
 
-                  <div className="card-body d-flex flex-column" style={{ height: 500, overflowY: 'auto', background: '#101522' }}>
+                  <div className="card-body d-flex flex-column mobile-chat-messages" style={{ background: '#101522' }}>
                     {(pedidoAtivo.mensagens || []).map(msg => {
                       const equipa = msg.enviadoPor === 'Gestor' || msg.enviadoPor === 'Admin';
                       return (
                         <div key={msg.id} className={`d-flex mb-3 ${equipa ? 'justify-content-end' : 'justify-content-start'}`}>
-                          <div className={`p-3 rounded-3 ${equipa ? 'bg-primary text-white' : 'bg-secondary text-white'}`} style={{ maxWidth: '72%' }}>
+                          <div className={`p-3 rounded-3 mobile-chat-bubble ${equipa ? 'bg-primary text-white' : 'bg-secondary text-white'}`} style={{ maxWidth: '72%' }}>
                             <div className="small fw-bold mb-1">{msg.enviadoPor}</div>
                             <div>{msg.texto}</div>
                           </div>
@@ -713,7 +713,7 @@ const DetalhesCliente = () => {
                     })}
                   </div>
 
-                  <form onSubmit={responderPedido} className="card-footer border-secondary d-flex gap-2">
+                  <form onSubmit={responderPedido} className="card-footer border-secondary d-flex gap-2 mobile-chat-footer">
                     <input
                       className="form-control bg-secondary text-white border-0"
                       placeholder="Responder ao cliente..."

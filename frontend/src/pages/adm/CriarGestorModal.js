@@ -58,13 +58,16 @@ export default function CriarGestorModal({ show, onClose }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        padding: '12px',
         zIndex: 999
       }}
     >
 
       <div
         style={{
-          width: '420px',
+          width: 'min(420px, calc(100vw - 24px))',
+          maxHeight: 'calc(100dvh - 24px)',
+          overflowY: 'auto',
           background: '#fff',
           borderRadius: '14px',
           padding: '1.5rem',

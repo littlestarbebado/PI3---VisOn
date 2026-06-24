@@ -43,6 +43,15 @@ export default function DadosConta() {
   const name = user?.nome || user?.name || 'Utilizador CyberBox';
   const [stats, setStats] = useState(EMPTY_STATS);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const [passwordFeedback, setPasswordFeedback] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const company = user?.empresa?.nome || user?.empresaNome || user?.cliente?.nome
     || user?.clienteNome || (currentRole === 'Cliente' ? name : null);
@@ -109,6 +118,50 @@ export default function DadosConta() {
     return () => { active = false; };
   }, [currentRole, user?.score]);
 
+  const closePasswordModal = () => {
+    setPasswordModalOpen(false);
+    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordFeedback('');
+    setPasswordError('');
+    setPasswordSubmitting(false);
+  };
+
+  const updatePasswordField = (field, value) => {
+    setPasswordForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const submitPasswordChange = async (event) => {
+    event.preventDefault();
+    setPasswordError('');
+    setPasswordFeedback('');
+
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setPasswordError('Preencha a password atual, a nova password e a confirmacao.');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('A confirmacao nao coincide com a nova password.');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError('A nova password deve ter pelo menos 8 caracteres.');
+      return;
+    }
+
+    setPasswordSubmitting(true);
+    try {
+      const { data } = await api.post('/auth/change-password', passwordForm);
+      setPasswordFeedback(data?.mensagem || 'Password alterada com sucesso.');
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      setPasswordError(error.response?.data?.erro || 'Nao foi possivel alterar a password.');
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  };
+
   return (
     <div className="account-page">
       <div className="account-page__container">
@@ -174,13 +227,69 @@ export default function DadosConta() {
               <div><span>JWT</span><strong>{token ? 'Ativo' : 'Inativo'}</strong></div>
               {lastLogin && <div><span>Início da sessão</span><strong>{lastLogin}</strong></div>}
             </div>
-            <button type="button" className="account-password-button" disabled title="Funcionalidade ainda não disponível">
+            <button type="button" className="account-password-button" onClick={() => setPasswordModalOpen(true)}>
               <i className="bi bi-key" /> Alterar Password
-              <span>Brevemente</span>
             </button>
           </section>
         </div>
       </div>
+
+      {passwordModalOpen && (
+        <div className="account-password-modal" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
+          <form className="account-password-modal__panel" onSubmit={submitPasswordChange}>
+            <button type="button" className="account-password-modal__close" onClick={closePasswordModal} aria-label="Fechar">
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+            <div className="account-card__heading">
+              <div className="account-card__heading-icon account-card__heading-icon--secure"><i className="bi bi-key" /></div>
+              <div><span>Seguranca</span><h2 id="password-modal-title">Alterar Password</h2></div>
+            </div>
+
+            <div className="account-password-form">
+              <label>
+                Password atual
+                <input
+                  type="password"
+                  className="form-control"
+                  value={passwordForm.currentPassword}
+                  onChange={event => updatePasswordField('currentPassword', event.target.value)}
+                  autoComplete="current-password"
+                />
+              </label>
+              <label>
+                Nova password
+                <input
+                  type="password"
+                  className="form-control"
+                  value={passwordForm.newPassword}
+                  onChange={event => updatePasswordField('newPassword', event.target.value)}
+                  autoComplete="new-password"
+                />
+              </label>
+              <label>
+                Confirmar nova password
+                <input
+                  type="password"
+                  className="form-control"
+                  value={passwordForm.confirmPassword}
+                  onChange={event => updatePasswordField('confirmPassword', event.target.value)}
+                  autoComplete="new-password"
+                />
+              </label>
+            </div>
+
+            {passwordError && <div className="account-password-alert account-password-alert--error">{passwordError}</div>}
+            {passwordFeedback && <div className="account-password-alert account-password-alert--success">{passwordFeedback}</div>}
+
+            <div className="account-password-modal__actions">
+              <button type="button" className="btn btn-outline-secondary" onClick={closePasswordModal}>Cancelar</button>
+              <button type="submit" className="btn btn-primary" disabled={passwordSubmitting}>
+                {passwordSubmitting ? 'A guardar...' : 'Guardar password'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

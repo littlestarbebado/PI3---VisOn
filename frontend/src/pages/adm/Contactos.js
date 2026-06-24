@@ -194,13 +194,16 @@ export default function Contactos() {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            padding: '12px',
             zIndex: 999
           }}
         >
 
           <div
             style={{
-              width: '600px',
+              width: 'min(600px, calc(100vw - 24px))',
+              maxHeight: 'calc(100dvh - 24px)',
+              overflowY: 'auto',
               background: '#fff',
               borderRadius: '14px',
               padding: '24px'

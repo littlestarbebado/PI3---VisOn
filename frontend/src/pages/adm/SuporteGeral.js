@@ -258,8 +258,8 @@ export default function SuporteGeral() {
 
         <div className="col-xl-5">
           <div
+            className="mobile-chat-card"
             style={{
-              minHeight: 680,
               background: '#0f172a',
               color: '#fff',
               borderRadius: 8,
@@ -309,9 +309,9 @@ export default function SuporteGeral() {
                 </div>
 
                 <div
+                  className="mobile-chat-messages"
                   style={{
                     flex: 1,
-                    overflowY: 'auto',
                     padding: '1.25rem',
                     background: '#0b1120'
                   }}
@@ -329,6 +329,7 @@ export default function SuporteGeral() {
                         className={`d-flex mb-3 ${equipa ? 'justify-content-end' : 'justify-content-start'}`}
                       >
                         <div
+                          className="mobile-chat-bubble"
                           style={{
                             maxWidth: '78%',
                             borderRadius: 8,
@@ -356,6 +357,7 @@ export default function SuporteGeral() {
 
                 <form
                   onSubmit={enviarMensagem}
+                  className="mobile-chat-footer"
                   style={{
                     display: 'flex',
                     gap: '0.75rem',
