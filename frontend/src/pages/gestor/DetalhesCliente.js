@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { exportReportToPdf } from '../../utils/pdfExport';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 
@@ -21,6 +22,10 @@ function categoriaDocumento(categoria) {
   if (categoria === 'Evidencia') return 'Evidência';
   if (categoria === 'Documentacao') return 'Documentação';
   return categoria || 'Documento';
+}
+
+function estadoNIS2Label(estado) {
+  return ESTADOS_NIS2.find(([valor]) => valor === estado)?.[1] || estado || 'Nao Iniciado';
 }
 
 const DetalhesCliente = () => {
@@ -46,6 +51,9 @@ const DetalhesCliente = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadErro, setUploadErro] = useState(null);
   const [uploadSucesso, setUploadSucesso] = useState(false);
+  const [documentoFeedback, setDocumentoFeedback] = useState('');
+  const [documentoErro, setDocumentoErro] = useState('');
+  const [documentoEliminandoId, setDocumentoEliminandoId] = useState(null);
   const [nis2, setNis2] = useState({
     estado: 'Nao Iniciado',
     percentagem: 0,
@@ -186,15 +194,36 @@ const DetalhesCliente = () => {
   };
 
   const alterarEstadoDocumento = (documentoId, estado) => {
+    setDocumentoErro('');
+    setDocumentoFeedback('');
     api.put(`/documentos/${documentoId}/estado`, { estado })
       .then(response => {
         setDocumentos(prev => prev.map(doc => (
           doc.id === documentoId ? { ...doc, estado: response.data.estado } : doc
         )));
+        setDocumentoFeedback('Estado do documento atualizado.');
       })
       .catch(error => {
-        setErro(error.response?.data?.erro || 'Nao foi possivel alterar o estado da submissao.');
+        setDocumentoErro(error.response?.data?.erro || 'Nao foi possivel alterar o estado da submissao.');
       });
+  };
+
+  const eliminarDocumento = async (documentoId) => {
+    if (!window.confirm('Eliminar este documento?')) return;
+
+    setDocumentoEliminandoId(documentoId);
+    setDocumentoErro('');
+    setDocumentoFeedback('');
+
+    try {
+      await api.delete(`/documentos/${documentoId}`);
+      setDocumentos(prev => prev.filter(doc => doc.id !== documentoId));
+      setDocumentoFeedback('Documento eliminado com sucesso.');
+    } catch (error) {
+      setDocumentoErro(error.response?.data?.erro || 'Nao foi possivel eliminar o documento.');
+    } finally {
+      setDocumentoEliminandoId(null);
+    }
   };
 
   const guardarNIS2 = () => {
@@ -221,6 +250,8 @@ const DetalhesCliente = () => {
   const handleUpload = () => {
     setUploadErro(null);
     setUploadSucesso(false);
+    setDocumentoErro('');
+    setDocumentoFeedback('');
 
     if (!nomeDoc || !ficheiro) {
       setUploadErro('O nome do documento e o ficheiro PDF sao obrigatorios.');
@@ -241,6 +272,7 @@ const DetalhesCliente = () => {
     })
       .then(() => {
         setUploadSucesso(true);
+        setDocumentoFeedback('Documento carregado com sucesso.');
         setNomeDoc('');
         setDescDoc('');
         setCategoriaDoc('Documentacao');
@@ -251,6 +283,97 @@ const DetalhesCliente = () => {
         setUploadErro(err.response?.data?.erro || 'Erro ao enviar o ficheiro.');
       })
       .finally(() => setUploading(false));
+  };
+
+  const exportarAtivosPDF = () => {
+    exportReportToPdf({
+      title: 'Ativos Tecnologicos',
+      clientName: cliente?.nome,
+      sections: [{
+        title: 'Inventario de ativos',
+        description: 'Resumo dos ativos tecnologicos registados para o cliente.',
+        table: {
+          columns: [
+            { key: 'nome', label: 'Nome' },
+            { key: 'tipo', label: 'Tipo' },
+            { key: 'criticidade', label: 'Criticidade' },
+            { key: 'descricao', label: 'Descricao' }
+          ],
+          rows: ativos.map(ativo => ({
+            nome: ativo.nome,
+            tipo: ativo.tipo || 'Nao definido',
+            criticidade: ativo.criticidade || 'Media',
+            descricao: ativo.descricao || 'Sem descricao detalhada.'
+          }))
+        }
+      }]
+    });
+  };
+
+  const exportarNIS2PDF = () => {
+    const evidencias = documentos
+      .filter(doc => nis2.evidenciasIds.includes(doc.id))
+      .map(doc => ({
+        nome: doc.nome,
+        categoria: categoriaDocumento(doc.categoria),
+        estado: doc.estado || 'N/D'
+      }));
+
+    exportReportToPdf({
+      title: 'Avaliacao NIS2',
+      clientName: cliente?.nome,
+      sections: [
+        {
+          title: 'Estado de conformidade',
+          fields: [
+            { label: 'Estado', value: estadoNIS2Label(nis2.estado) },
+            { label: 'Percentagem', value: `${nis2.percentagem || 0}%` },
+            { label: 'Score de seguranca', value: `${cliente?.score ?? 0}/100` }
+          ],
+          description: nis2.observacoes || 'A avaliacao NIS2 ainda nao tem observacoes.'
+        },
+        {
+          title: 'Evidencias associadas',
+          table: {
+            columns: [
+              { key: 'nome', label: 'Documento' },
+              { key: 'categoria', label: 'Categoria' },
+              { key: 'estado', label: 'Estado' }
+            ],
+            rows: evidencias
+          }
+        }
+      ]
+    });
+  };
+
+  const exportarIncidentesPDF = () => {
+    exportReportToPdf({
+      title: 'Incidentes',
+      clientName: cliente?.nome,
+      sections: [{
+        title: 'Incidentes reportados',
+        description: 'Registo dos incidentes submetidos pelo cliente e respetivo estado de acompanhamento.',
+        table: {
+          columns: [
+            { key: 'tipo', label: 'Tipo' },
+            { key: 'impacto', label: 'Impacto' },
+            { key: 'data', label: 'Data/Hora' },
+            { key: 'estado', label: 'Estado' },
+            { key: 'descricao', label: 'Descricao' },
+            { key: 'acoes', label: 'Acoes imediatas' }
+          ],
+          rows: incidentes.map(incidente => ({
+            tipo: incidente.tipo,
+            impacto: incidente.impacto,
+            data: formatarData(incidente.dataOcorrencia),
+            estado: incidente.estado,
+            descricao: incidente.descricao,
+            acoes: incidente.acoesImediatas || 'Sem acoes imediatas comunicadas.'
+          }))
+        }
+      }]
+    });
   };
 
   if (loading) return <div className="text-center text-white my-5">A carregar dados do cliente...</div>;
@@ -322,6 +445,12 @@ const DetalhesCliente = () => {
 
       {abaAtiva === 'ativos' && (
         <div className="card bg-dark border-secondary">
+          <div className="card-header border-secondary d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <span className="text-info fw-bold">Ativos tecnologicos</span>
+            <button type="button" className="btn btn-sm btn-info text-dark fw-bold" onClick={exportarAtivosPDF}>
+              Exportar PDF
+            </button>
+          </div>
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-dark table-hover mb-0 align-middle">
@@ -431,6 +560,18 @@ const DetalhesCliente = () => {
                   <div className="alert alert-success py-2 small mb-0">PDF enviado com sucesso!</div>
                 </div>
               )}
+
+              {documentoErro && (
+                <div className="col-12">
+                  <div className="alert alert-danger py-2 small mb-0">{documentoErro}</div>
+                </div>
+              )}
+
+              {documentoFeedback && (
+                <div className="col-12">
+                  <div className="alert alert-success py-2 small mb-0">{documentoFeedback}</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -478,14 +619,24 @@ const DetalhesCliente = () => {
                             )}
                           </td>
                           <td className="text-end pe-4">
-                            <a
-                              href={`${BACKEND_URL}${doc.caminho}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="btn btn-sm btn-info text-dark fw-bold"
-                            >
-                              Visualizar PDF
-                            </a>
+                            <div className="d-flex justify-content-end gap-2 flex-wrap">
+                              <a
+                                href={`${BACKEND_URL}${doc.caminho}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="btn btn-sm btn-info text-dark fw-bold"
+                              >
+                                Visualizar PDF
+                              </a>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => eliminarDocumento(doc.id)}
+                                disabled={documentoEliminandoId === doc.id}
+                              >
+                                {documentoEliminandoId === doc.id ? 'A eliminar...' : 'Eliminar'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -500,8 +651,11 @@ const DetalhesCliente = () => {
 
       {abaAtiva === 'nis2' && (
         <div className="card bg-dark border-secondary">
-          <div className="card-header border-secondary text-info fw-bold">
-            Avaliação de Conformidade NIS2
+          <div className="card-header border-secondary d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <span className="text-info fw-bold">Avaliação de Conformidade NIS2</span>
+            <button type="button" className="btn btn-sm btn-info text-dark fw-bold" onClick={exportarNIS2PDF}>
+              Exportar PDF
+            </button>
           </div>
           <div className="card-body row g-4">
             <div className="col-md-6">
@@ -570,8 +724,11 @@ const DetalhesCliente = () => {
         <div className="row g-4">
           <div className="col-lg-5">
             <div className="card bg-dark border-secondary">
-              <div className="card-header border-secondary text-info fw-bold">
-                Incidentes reportados
+              <div className="card-header border-secondary d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <span className="text-info fw-bold">Incidentes reportados</span>
+                <button type="button" className="btn btn-sm btn-info text-dark fw-bold" onClick={exportarIncidentesPDF}>
+                  Exportar PDF
+                </button>
               </div>
               <div className="list-group list-group-flush">
                 {incidentes.length === 0 ? (

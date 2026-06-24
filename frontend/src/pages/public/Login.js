@@ -89,6 +89,10 @@ export default function Login() {
             </div>
           )}
 
+          <p style={{ color: '#667085', fontSize: '0.82rem', marginBottom: '0.9rem' }}>
+            Esqueceu a palavra-passe? Contacte o administrador da plataforma para receber uma password temporaria.
+          </p>
+
           <button
             type="submit"
             disabled={loading}

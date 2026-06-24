@@ -124,16 +124,24 @@ router.put('/:id/estado', auth, requireRole(['Admin', 'Gestor']), async (req, re
 // DELETE /api/documentos/:id — Admin/Gestor
 router.delete('/:id', auth, requireRole(['Admin', 'Gestor']), async (req, res) => {
   try {
-    const doc = await Documento.findByPk(req.params.id);
+    const doc = await Documento.findByPk(req.params.id, {
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }]
+    });
     if (!doc) return res.status(404).json({ erro: 'Documento nao encontrado.' });
 
-    // Apagar ficheiro físico se existir
+    // Apagar ficheiro fisico se existir e pertencer a pasta de uploads.
     if (doc.caminho) {
-      const ficheiro = path.join(__dirname, '../..', doc.caminho);
-      if (fs.existsSync(ficheiro)) fs.unlinkSync(ficheiro);
+      const ficheiro = path.resolve(__dirname, '../..', `.${doc.caminho}`);
+      if (ficheiro.startsWith(uploadDir) && fs.existsSync(ficheiro)) {
+        fs.unlinkSync(ficheiro);
+      }
     }
 
-    await registrarLog(req.user.email, 'Remover Documento', `Documento "${doc.nome}" eliminado (id: ${doc.id})`);
+    await registrarLog(
+      req.user.email,
+      'Remover Documento',
+      `Documento "${doc.nome}" eliminado (id: ${doc.id}) do cliente ${doc.cliente?.email || doc.ClienteId}`
+    );
 
     await doc.destroy();
     res.json({ mensagem: 'Documento eliminado.' });

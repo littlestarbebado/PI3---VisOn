@@ -12,6 +12,8 @@ export default function Utilizadores() {
   const [utilizadores, setUtilizadores] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [resetInfo, setResetInfo] = useState(null);
+  const [resetLoadingKey, setResetLoadingKey] = useState(null);
 
   // Função reutilizável para ir buscar os utilizadores à API
   function carregarUtilizadores() {
@@ -46,6 +48,27 @@ export default function Utilizadores() {
         console.error('Erro ao eliminar utilizador:', err);
         alert('Erro ao eliminar utilizador.');
       });
+  }
+
+  function redefinirPassword(user) {
+    if (!window.confirm(`Gerar uma nova password temporaria para ${user.nome}?`)) return;
+
+    const key = `${user.role}-${user.id}`;
+    setResetLoadingKey(key);
+    setErro(null);
+    api.post(`/auth/utilizadores/${user.role}/${user.id}/reset-password`)
+      .then(res => {
+        setResetInfo({
+          nome: user.nome,
+          email: user.email,
+          role: user.role,
+          password: res.data.temporaryPassword
+        });
+      })
+      .catch(err => {
+        setErro(err.response?.data?.erro || 'Nao foi possivel redefinir a password.');
+      })
+      .finally(() => setResetLoadingKey(null));
   }
 
   return (
@@ -157,6 +180,31 @@ export default function Utilizadores() {
           <p style={{ color: '#ef4444' }}>{erro}</p>
         )}
 
+        {resetInfo && (
+          <div
+            className="alert alert-info"
+            style={{ borderRadius: 12, borderColor: '#bfdbfe', color: '#1e3a8a', background: '#eff6ff' }}
+          >
+            <div className="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+              <div>
+                <strong>Password temporaria gerada</strong>
+                <div className="small mt-1">
+                  {resetInfo.role}: {resetInfo.nome} ({resetInfo.email})
+                </div>
+                <code style={{ display: 'inline-block', marginTop: 8, padding: '6px 8px', borderRadius: 8, background: '#fff', color: '#111827' }}>
+                  {resetInfo.password}
+                </code>
+                <div className="small mt-2">
+                  Entregue esta password ao utilizador por canal seguro. Ela nao volta a ser apresentada.
+                </div>
+              </div>
+              <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => setResetInfo(null)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* LISTA — key usa o id real da base de dados */}
 {!carregando && !erro && utilizadores.map((user) => {
   // Configuração dinâmica de cores por perfil (Role)
@@ -240,7 +288,14 @@ export default function Utilizadores() {
 
         {/* AÇÕES — só visíveis para não-admins */}
         {user.role !== 'Admin' && (
-          <div className="d-flex gap-3">
+          <div className="d-flex gap-2 flex-wrap justify-content-end">
+            <button
+              onClick={() => redefinirPassword(user)}
+              className="btn btn-sm btn-outline-primary"
+              disabled={resetLoadingKey === `${user.role}-${user.id}`}
+            >
+              {resetLoadingKey === `${user.role}-${user.id}` ? 'A gerar...' : 'Redefinir Password'}
+            </button>
             <button
               onClick={() => eliminarUtilizador(user.id, user.role)}
               style={{

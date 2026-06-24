@@ -1,8 +1,9 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { Op } = require('sequelize');
-const { Admin, Cliente, Documento, Log, NIS2Assessment } = require('../models');
+const { Admin, Cliente, Documento, Log, NIS2Assessment, Incidente, Pedido } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
@@ -21,6 +22,10 @@ function utilizadorPublico(utilizador, role) {
     role,
     ...(role === 'Cliente' ? { score: utilizador.score, status: utilizador.status } : {})
   };
+}
+
+function gerarPasswordTemporaria() {
+  return `Temp-${crypto.randomBytes(5).toString('hex')}-9A`;
 }
 
 router.post('/login', async (req, res) => {
@@ -182,6 +187,38 @@ router.post('/gestores', auth, requireRole(['Admin']), async (req, res) => {
   }
 });
 
+router.post('/utilizadores/:role/:id/reset-password', auth, requireRole(['Admin']), async (req, res) => {
+  try {
+    const role = String(req.params.role || '');
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) return res.status(400).json({ erro: 'Utilizador invalido.' });
+    if (!['Gestor', 'Cliente'].includes(role)) {
+      return res.status(403).json({ erro: 'Este tipo de utilizador nao pode ter password redefinida por esta rota.' });
+    }
+
+    const Model = role === 'Cliente' ? Cliente : Admin;
+    const utilizador = await Model.findByPk(id);
+    if (!utilizador || (role === 'Gestor' && utilizador.role !== 'Gestor')) {
+      return res.status(404).json({ erro: 'Utilizador nao encontrado.' });
+    }
+
+    const temporaryPassword = gerarPasswordTemporaria();
+    utilizador.password = await bcrypt.hash(temporaryPassword, 10);
+    await utilizador.save();
+
+    await registrarLog(req.user.email, 'Redefinir Password', `${role} ${utilizador.email} teve a password redefinida por administrador.`);
+    return res.json({
+      mensagem: 'Password temporaria gerada com sucesso.',
+      temporaryPassword,
+      user: utilizadorPublico(utilizador, role)
+    });
+  } catch (error) {
+    console.error('Erro ao redefinir password:', error);
+    return res.status(500).json({ erro: 'Erro interno ao redefinir password.' });
+  }
+});
+
 router.delete('/utilizadores/:role/:id', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const role = String(req.params.role || '');
@@ -209,17 +246,51 @@ router.delete('/utilizadores/:role/:id', auth, requireRole(['Admin']), async (re
 
 router.get('/stats', auth, async (req, res) => {
   try {
-    const clientes = await Cliente.count();
-    const utilizadores = await Admin.count();
-    const documentos = await Documento.count();
-    const atividade = await Log.count();
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const [
+      clientes,
+      gestores,
+      utilizadores,
+      documentos,
+      documentosPendentes,
+      incidentesAbertos,
+      pedidosPendentes,
+      atividade,
+      atividadeHoje,
+      atividadeRecente,
+      clientesRecentes
+    ] = await Promise.all([
+      Cliente.count(),
+      Admin.count({ where: { role: 'Gestor' } }),
+      Admin.count(),
+      Documento.count(),
+      Documento.count({ where: { estado: 'Pendente' } }),
+      Incidente.count({ where: { estado: { [Op.ne]: 'Resolvido' } } }),
+      Pedido.count({ where: { estado: 'Pendente' } }),
+      Log.count(),
+      Log.count({ where: { createdAt: { [Op.gte]: hoje } } }),
+      Log.findAll({ order: [['createdAt', 'DESC']], limit: 6 }),
+      Cliente.findAll({
+        attributes: { exclude: ['password'] },
+        order: [['createdAt', 'DESC']],
+        limit: 5
+      })
+    ]);
 
     res.json({
       clientes,
+      gestores,
       utilizadores,
       documentos,
+      documentosPendentes,
+      incidentesAbertos,
+      pedidosPendentes,
       atividade,
-      clientesRecentes: []
+      atividadeHoje,
+      atividadeRecente,
+      clientesRecentes
     });
   } catch (error) {
     console.error('Erro ao obter estatísticas:', error);
