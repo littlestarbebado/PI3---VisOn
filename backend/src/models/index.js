@@ -41,6 +41,9 @@ Documento.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
 Cliente.hasMany(Pedido, { foreignKey: 'ClienteId', as: 'pedidos' });
 Pedido.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
 
+Admin.hasMany(Cliente, { foreignKey: 'GestorResponsavelId', as: 'clientesAtribuidos' });
+Cliente.belongsTo(Admin, { foreignKey: 'GestorResponsavelId', as: 'gestorResponsavel' });
+
 Pedido.hasMany(MensagemPedido, { foreignKey: 'PedidoId', as: 'mensagens', onDelete: 'CASCADE' });
 MensagemPedido.belongsTo(Pedido, { foreignKey: 'PedidoId', as: 'pedido' });
 

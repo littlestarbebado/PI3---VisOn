@@ -64,7 +64,10 @@ async function autenticarSocket(socket, payload = {}) {
 }
 
 async function podeEntrarNoPedido(user, pedidoId) {
-  const pedido = await Pedido.findByPk(pedidoId, { attributes: ['id', 'ClienteId'] });
+  const pedido = await Pedido.findByPk(pedidoId, {
+    attributes: ['id', 'ClienteId'],
+    include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'GestorResponsavelId'] }]
+  });
   if (!pedido) return { autorizado: false, codigo: 'PEDIDO_INDISPONIVEL' };
 
   if (user.role === 'Cliente') {
@@ -75,7 +78,10 @@ async function podeEntrarNoPedido(user, pedidoId) {
   }
 
   if (user.role === 'Admin' || user.role === 'Gestor') {
-    return { autorizado: true };
+    return {
+      autorizado: user.role === 'Admin' || Number(pedido.cliente?.GestorResponsavelId) === Number(user.id),
+      codigo: 'ACESSO_NEGADO'
+    };
   }
 
   return { autorizado: false, codigo: 'ACESSO_NEGADO' };

@@ -3,6 +3,7 @@ const { Incidente, Cliente } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
+const { pedidoClienteWhereForUser } = require('../utils/accessControl');
 
 const ESTADOS = ['Pendente', 'Em Analise', 'Resolvido'];
 
@@ -63,13 +64,15 @@ router.get('/', auth, requireRole(['Cliente', 'Gestor', 'Admin']), async (req, r
 
     if (role === 'Cliente') {
       where.ClienteId = req.user.id;
-    } else if (req.query.clienteId) {
+    } else if (role === 'Admin' && req.query.clienteId) {
+      where.ClienteId = req.query.clienteId;
+    } else if (role === 'Gestor' && req.query.clienteId) {
       where.ClienteId = req.query.clienteId;
     }
 
     const incidentes = await Incidente.findAll({
       where,
-      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }],
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email', 'GestorResponsavelId'], where: pedidoClienteWhereForUser(req) }],
       order: [['createdAt', 'DESC']]
     });
 
@@ -90,10 +93,13 @@ router.put('/:id/estado', auth, requireRole(['Gestor', 'Admin']), async (req, re
     }
 
     const incidente = await Incidente.findByPk(req.params.id, {
-      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }]
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email', 'GestorResponsavelId'] }]
     });
     if (!incidente) {
       return res.status(404).json({ erro: 'Incidente nao encontrado.' });
+    }
+    if (getRole(req) === 'Gestor' && Number(incidente.cliente?.GestorResponsavelId) !== Number(req.user.id)) {
+      return res.status(403).json({ erro: 'Sem permissao para aceder a este incidente.' });
     }
 
     await incidente.update({ estado });

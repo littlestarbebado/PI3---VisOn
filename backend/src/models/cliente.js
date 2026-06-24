@@ -10,6 +10,7 @@ module.exports = (sequelize) => sequelize.define('Cliente', {
   password: { type: DataTypes.STRING, allowNull: false },
   score: { type: DataTypes.INTEGER, defaultValue: 0 },
   status: { type: DataTypes.BOOLEAN, defaultValue: true },
+  GestorResponsavelId: { type: DataTypes.INTEGER, allowNull: true },
 
   // Responsavel de Seguranca
   respSegurancaNome: { type: DataTypes.STRING },

@@ -6,6 +6,7 @@ const { Documento, Cliente } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
+const { responderSeClienteNaoAcessivel } = require('../utils/accessControl');
 
 const CATEGORIAS_CLIENTE = ['Evidencia', 'Pen Test', 'Documentacao', 'Outros'];
 const ESTADOS_SUBMISSAO = ['Pendente', 'Em Analise', 'Concluido'];
@@ -38,6 +39,13 @@ router.get('/', auth, async (req, res) => {
     const role = req.user?.role;
     const where = {};
     if (role === 'Cliente') where.ClienteId = req.user.id;
+    if (role === 'Gestor') {
+      const clientes = await Cliente.findAll({
+        where: { GestorResponsavelId: req.user.id },
+        attributes: ['id']
+      });
+      where.ClienteId = clientes.map(cliente => cliente.id);
+    }
 
     const documentos = await Documento.findAll({
       where,
@@ -86,6 +94,7 @@ router.post('/', auth, requireRole(['Admin', 'Gestor']), upload.single('ficheiro
   try {
     const { nome, descricao, ClienteId, categoria } = req.body;
     if (!ClienteId) return res.status(400).json({ erro: 'ClienteId e obrigatorio.' });
+    if (await responderSeClienteNaoAcessivel(req, res, ClienteId)) return;
 
     const doc = await Documento.create({
       nome: nome || req.file?.originalname || 'Documento',
@@ -114,6 +123,7 @@ router.put('/:id/estado', auth, requireRole(['Admin', 'Gestor']), async (req, re
 
     const doc = await Documento.findByPk(req.params.id);
     if (!doc) return res.status(404).json({ erro: 'Documento nao encontrado.' });
+    if (await responderSeClienteNaoAcessivel(req, res, doc.ClienteId)) return;
 
     await doc.update({ estado });
     await registrarLog(req.user.email, 'Alterar Estado Documento', `Documento #${doc.id} movido para ${estado}`);
@@ -128,6 +138,7 @@ router.delete('/:id', auth, requireRole(['Admin', 'Gestor']), async (req, res) =
       include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }]
     });
     if (!doc) return res.status(404).json({ erro: 'Documento nao encontrado.' });
+    if (await responderSeClienteNaoAcessivel(req, res, doc.ClienteId)) return;
 
     // Apagar ficheiro fisico se existir e pertencer a pasta de uploads.
     if (doc.caminho) {

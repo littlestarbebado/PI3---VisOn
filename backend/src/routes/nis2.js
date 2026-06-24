@@ -4,6 +4,7 @@ const { NIS2Assessment, Cliente, Documento } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
+const { responderSeClienteNaoAcessivel } = require('../utils/accessControl');
 
 const ESTADOS = ['Nao Iniciado', 'Em Analise', 'Conforme', 'Nao Conforme'];
 
@@ -26,6 +27,7 @@ router.get('/', auth, requireRole(['Cliente', 'Gestor', 'Admin']), async (req, r
   try {
     const clienteId = req.user.role === 'Cliente' ? req.user.id : req.query.clienteId;
     if (!clienteId) return res.status(400).json({ erro: 'clienteId obrigatorio.' });
+    if (await responderSeClienteNaoAcessivel(req, res, clienteId)) return;
 
     const avaliacao = await NIS2Assessment.findOne({ where: { ClienteId: clienteId } });
     res.json(await respostaAvaliacao(avaliacao));
@@ -48,6 +50,7 @@ router.put('/:clienteId', auth, requireRole(['Gestor', 'Admin']), async (req, re
     if (!Number.isInteger(percentagem) || percentagem < 0 || percentagem > 100) {
       return res.status(400).json({ erro: 'Percentagem deve estar entre 0 e 100.' });
     }
+    if (await responderSeClienteNaoAcessivel(req, res, clienteId)) return;
 
     const cliente = await Cliente.findByPk(clienteId);
     if (!cliente) return res.status(404).json({ erro: 'Cliente nao encontrado.' });

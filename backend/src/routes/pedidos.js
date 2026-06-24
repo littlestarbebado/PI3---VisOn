@@ -3,6 +3,7 @@ const { Pedido, MensagemPedido, Cliente } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
 const { registrarLog } = require('../utils/logger');
+const { pedidoClienteWhereForUser } = require('../utils/accessControl');
 
 const ESTADOS = ['Pendente', 'Em Análise', 'Concluído'];
 
@@ -21,7 +22,7 @@ async function findPedidoForUser(req, res) {
   const pedido = await Pedido.findByPk(req.params.id, {
     include: [
       { model: MensagemPedido, as: 'mensagens', order: [['createdAt', 'ASC']] },
-      { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }
+      { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email', 'GestorResponsavelId'] }
     ]
   });
 
@@ -31,6 +32,11 @@ async function findPedidoForUser(req, res) {
   }
 
   if (role === 'Cliente' && pedido.ClienteId !== req.user.id) {
+    res.status(403).json({ erro: 'Sem permissao para aceder a este pedido.' });
+    return null;
+  }
+
+  if (role === 'Gestor' && Number(pedido.cliente?.GestorResponsavelId) !== Number(req.user.id)) {
     res.status(403).json({ erro: 'Sem permissao para aceder a este pedido.' });
     return null;
   }
@@ -61,7 +67,7 @@ router.post('/', auth, requireRole(['Cliente']), async (req, res) => {
     const pedidoCompleto = await Pedido.findByPk(pedido.id, {
       include: [
         { model: MensagemPedido, as: 'mensagens' },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }
+        { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email', 'GestorResponsavelId'] }
       ]
     });
 
@@ -79,15 +85,19 @@ router.get('/', auth, requireRole(['Cliente', 'Gestor', 'Admin']), async (req, r
     const where = {};
     if (role === 'Cliente') {
       where.ClienteId = req.user.id;
-    } else if (req.query.clienteId) {
+    } else if (role === 'Admin' && req.query.clienteId) {
       where.ClienteId = req.query.clienteId;
+    } else if (role === 'Gestor') {
+      if (req.query.clienteId) {
+        where.ClienteId = req.query.clienteId;
+      }
     }
 
     const pedidos = await Pedido.findAll({
       where,
       include: [
         { model: MensagemPedido, as: 'mensagens' },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }
+        { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email', 'GestorResponsavelId'], where: pedidoClienteWhereForUser(req) }
       ],
       order: [['updatedAt', 'DESC'], [{ model: MensagemPedido, as: 'mensagens' }, 'createdAt', 'ASC']]
     });
@@ -136,8 +146,13 @@ router.put('/:id/estado', auth, requireRole(['Gestor', 'Admin']), async (req, re
       return res.status(400).json({ erro: 'Estado invalido.' });
     }
 
-    const pedido = await Pedido.findByPk(req.params.id);
+    const pedido = await Pedido.findByPk(req.params.id, {
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'GestorResponsavelId'] }]
+    });
     if (!pedido) return res.status(404).json({ erro: 'Pedido nao encontrado.' });
+    if (getRole(req) === 'Gestor' && Number(pedido.cliente?.GestorResponsavelId) !== Number(req.user.id)) {
+      return res.status(403).json({ erro: 'Sem permissao para aceder a este pedido.' });
+    }
 
     await pedido.update({ estado });
     await registrarLog(req.user?.email || req.admin?.email, 'Alteracao de Estado', `Pedido #${pedido.id} movido para ${estado}`);

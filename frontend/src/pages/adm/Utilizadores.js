@@ -14,6 +14,7 @@ export default function Utilizadores() {
   const [erro, setErro] = useState(null);
   const [resetInfo, setResetInfo] = useState(null);
   const [resetLoadingKey, setResetLoadingKey] = useState(null);
+  const [gestorLoadingClienteId, setGestorLoadingClienteId] = useState(null);
 
   // Função reutilizável para ir buscar os utilizadores à API
   function carregarUtilizadores() {
@@ -70,6 +71,25 @@ export default function Utilizadores() {
       })
       .finally(() => setResetLoadingKey(null));
   }
+
+  function alterarGestorCliente(clienteId, gestorId) {
+    setGestorLoadingClienteId(clienteId);
+    setErro(null);
+    api.put(`/clientes/${clienteId}/gestor`, { GestorResponsavelId: gestorId || null })
+      .then(res => {
+        setUtilizadores(lista => lista.map(user => (
+          user.role === 'Cliente' && user.id === clienteId
+            ? { ...user, GestorResponsavelId: res.data.cliente.GestorResponsavelId, gestorResponsavel: res.data.cliente.gestorResponsavel }
+            : user
+        )));
+      })
+      .catch(err => {
+        setErro(err.response?.data?.erro || 'Nao foi possivel atualizar o gestor responsavel.');
+      })
+      .finally(() => setGestorLoadingClienteId(null));
+  }
+
+  const gestores = utilizadores.filter(user => user.role === 'Gestor');
 
   return (
     <div>
@@ -283,12 +303,33 @@ export default function Utilizadores() {
                 <i className="bi bi-telephone me-1" style={{ fontSize: '0.75rem' }}></i> {user.telefone}
               </small>
             )}
+
+            {user.role === 'Cliente' && (
+              <small style={{ display: 'block', color: '#6b7280' }}>
+                Gestor: {user.gestorResponsavel?.nome || 'Sem gestor atribuido'}
+              </small>
+            )}
           </div>
         </div>
 
         {/* AÇÕES — só visíveis para não-admins */}
         {user.role !== 'Admin' && (
           <div className="d-flex gap-2 flex-wrap justify-content-end">
+            {user.role === 'Cliente' && (
+              <select
+                className="form-select form-select-sm"
+                style={{ width: 210 }}
+                value={user.GestorResponsavelId || ''}
+                onChange={event => alterarGestorCliente(user.id, event.target.value)}
+                disabled={gestorLoadingClienteId === user.id}
+                aria-label="Gestor responsavel"
+              >
+                <option value="">Sem gestor</option>
+                {gestores.map(gestor => (
+                  <option key={gestor.id} value={gestor.id}>{gestor.nome}</option>
+                ))}
+              </select>
+            )}
             <button
               onClick={() => redefinirPassword(user)}
               className="btn btn-sm btn-outline-primary"

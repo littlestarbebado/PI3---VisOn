@@ -20,6 +20,8 @@ function utilizadorPublico(utilizador, role) {
     email: utilizador.email,
     telefone: utilizador.telefone || null,
     role,
+    GestorResponsavelId: utilizador.GestorResponsavelId || null,
+    gestorResponsavel: utilizador.gestorResponsavel || null,
     ...(role === 'Cliente' ? { score: utilizador.score, status: utilizador.status } : {})
   };
 }
@@ -139,7 +141,11 @@ router.get('/utilizadores', auth, requireRole(['Admin']), async (req, res) => {
   try {
     const [equipa, clientes] = await Promise.all([
       Admin.findAll({ attributes: { exclude: ['password'] }, order: [['nome', 'ASC']] }),
-      Cliente.findAll({ attributes: { exclude: ['password'] }, order: [['nome', 'ASC']] })
+      Cliente.findAll({
+        attributes: { exclude: ['password'] },
+        include: [{ model: Admin, as: 'gestorResponsavel', attributes: ['id', 'nome', 'email', 'role'] }],
+        order: [['nome', 'ASC']]
+      })
     ]);
 
     res.json([
@@ -235,6 +241,9 @@ router.delete('/utilizadores/:role/:id', auth, requireRole(['Admin']), async (re
     }
 
     const email = utilizador.email;
+    if (role === 'Gestor') {
+      await Cliente.update({ GestorResponsavelId: null }, { where: { GestorResponsavelId: utilizador.id } });
+    }
     await utilizador.destroy();
     await registrarLog(req.user.email, 'Remover Utilizador', `${role} removido: ${email}`);
     res.status(204).send();
@@ -246,8 +255,62 @@ router.delete('/utilizadores/:role/:id', auth, requireRole(['Admin']), async (re
 
 router.get('/stats', auth, async (req, res) => {
   try {
+    const role = req.user?.role;
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
+
+    if (role === 'Gestor') {
+      const clientesAtribuidos = await Cliente.findAll({
+        where: { GestorResponsavelId: req.user.id },
+        attributes: ['id'],
+        order: [['nome', 'ASC']]
+      });
+      const clienteIds = clientesAtribuidos.map(cliente => cliente.id);
+      const whereClienteIds = { ClienteId: clienteIds };
+      const avaliacoes = clienteIds.length
+        ? await NIS2Assessment.findAll({ where: whereClienteIds, attributes: ['percentagem'] })
+        : [];
+      const conformidadeMediaNIS2 = avaliacoes.length
+        ? Math.round(avaliacoes.reduce((total, item) => total + Number(item.percentagem || 0), 0) / avaliacoes.length)
+        : 0;
+
+      const [
+        documentos,
+        documentosPendentes,
+        incidentesAbertos,
+        pedidosPendentes,
+        atividadeHoje,
+        clientesRecentes
+      ] = await Promise.all([
+        Documento.count({ where: whereClienteIds }),
+        Documento.count({ where: { ...whereClienteIds, estado: 'Pendente' } }),
+        Incidente.count({ where: { ...whereClienteIds, estado: { [Op.ne]: 'Resolvido' } } }),
+        Pedido.count({ where: { ...whereClienteIds, estado: 'Pendente' } }),
+        Log.count({ where: { createdAt: { [Op.gte]: hoje } } }),
+        Cliente.findAll({
+          where: { GestorResponsavelId: req.user.id },
+          attributes: { exclude: ['password'] },
+          order: [['createdAt', 'DESC']],
+          limit: 5
+        })
+      ]);
+
+      return res.json({
+        clientes: clienteIds.length,
+        clientesAtribuidos: clienteIds.length,
+        gestores: 0,
+        utilizadores: clienteIds.length,
+        documentos,
+        documentosPendentes,
+        incidentesAbertos,
+        pedidosPendentes,
+        conformidadeMediaNIS2,
+        atividade: 0,
+        atividadeHoje,
+        atividadeRecente: [],
+        clientesRecentes
+      });
+    }
 
     const [
       clientes,

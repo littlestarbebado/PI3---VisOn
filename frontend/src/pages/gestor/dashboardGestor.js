@@ -7,6 +7,7 @@ const DashboardGestor = () => {
   const navigate = useNavigate();
 
   const [clientes, setClientes] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
 
@@ -26,9 +27,13 @@ const DashboardGestor = () => {
   // Carregar lista de clientes da API
   const carregarClientes = () => {
     setLoading(true);
-    api.get('/clientes')
-      .then(res => {
-        setClientes(res.data);
+    Promise.all([
+      api.get('/clientes'),
+      api.get('/auth/stats')
+    ])
+      .then(([clientesRes, statsRes]) => {
+        setClientes(clientesRes.data);
+        setStats(statsRes.data);
         setErro(null);
       })
       .catch(err => {
@@ -111,11 +116,12 @@ const DashboardGestor = () => {
 
       <div className="row g-3 mb-4 manager-kpis">
         {[
-          ['Clientes', clientes.length, 'bi-buildings', 'blue'],
-          ['Ativos', clientes.filter(cliente => cliente.status).length, 'bi-shield-check', 'green'],
-          ['A acompanhar', clientes.filter(cliente => !cliente.status).length, 'bi-exclamation-circle', 'amber']
+          ['Clientes atribuidos', stats?.clientesAtribuidos ?? clientes.length, 'bi-buildings', 'blue'],
+          ['Pedidos pendentes', stats?.pedidosPendentes ?? 0, 'bi-inbox', 'green'],
+          ['Incidentes abertos', stats?.incidentesAbertos ?? 0, 'bi-exclamation-circle', 'amber'],
+          ['NIS2 media', `${stats?.conformidadeMediaNIS2 ?? 0}%`, 'bi-clipboard2-check', 'blue']
         ].map(([label, value, icon, tone]) => (
-          <div className="col-12 col-sm-4" key={label}>
+          <div className="col-12 col-sm-6 col-lg-3" key={label}>
             <div className="manager-kpi">
               <span className={`manager-kpi__icon manager-kpi__icon--${tone}`}><i className={`bi ${icon}`} /></span>
               <div><strong>{value}</strong><small>{label}</small></div>

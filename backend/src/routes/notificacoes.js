@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const { Pedido, MensagemPedido, Cliente } = require('../models');
 const auth = require('../middlewares/auth');
 const { requireRole } = auth;
+const { pedidoClienteWhereForUser } = require('../utils/accessControl');
 
 function getRole(req) {
   return req.user?.role || req.admin?.role || req.user?.tipo || req.admin?.tipo;
@@ -40,7 +41,7 @@ router.get('/', auth, requireRole(['Cliente', 'Gestor', 'Admin']), async (req, r
         model: Pedido,
         as: 'pedido',
         where: pedidoWhereForUser(req),
-        include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email'] }]
+        include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'email', 'GestorResponsavelId'], where: pedidoClienteWhereForUser(req) }]
       }];
 
     const [total, mensagens] = await Promise.all([
@@ -80,7 +81,8 @@ router.post('/marcar-lidas', auth, requireRole(['Cliente', 'Gestor', 'Admin']), 
         model: Pedido,
         as: 'pedido',
         attributes: ['id', 'ClienteId'],
-        where: pedidoWhereForUser(req)
+        where: pedidoWhereForUser(req),
+        include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'GestorResponsavelId'], where: pedidoClienteWhereForUser(req) }]
       }]
     });
 
