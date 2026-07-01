@@ -69,7 +69,7 @@ async function ensureDefaultAdmin() {
         password: defaultHash,
         role: 'Admin'
       });
-      console.log(`Admin padrao criado no Postgres: ${defaultEmail} / ${defaultPassword}`);
+      console.log(`Admin padrao criado no Postgres: ${defaultEmail}`);
       return;
     }
 
@@ -81,7 +81,7 @@ async function ensureDefaultAdmin() {
         password: defaultHash,
         role: 'Admin'
       });
-      console.log(`Password do Admin padrao reposta no Postgres: ${defaultEmail} / ${defaultPassword}`);
+      console.log(`Password do Admin padrao reposta no Postgres: ${defaultEmail}`);
       return;
     }
 

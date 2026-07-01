@@ -44,14 +44,10 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
   try {
-    console.log('A tentar login...', { email });
-
     const response = await api.post('/auth/login', {
       email,
       password
     });
-
-    console.log('SUCESSO:', response.data);
 
     const { token: newToken, user: authenticatedUser } = response.data;
 
